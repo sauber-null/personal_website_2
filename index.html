@@ -1,0 +1,1219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dmytro Zahoruiko — AI / Computer Vision Engineer</title>
+<meta name="description" content="AI/ML engineer building production computer-vision, retrieval and LLM systems. Düsseldorf, Germany.">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --bg: #E9EDEF;
+    --panel: #FFFFFF;
+    --ink: #1B2127;
+    --soft: #5C666D;
+    --line: #CBD2D6;
+    --accent: #0A6A8C;
+    --hero: #14191E;
+    --hero-ink: #E8ECEE;
+    --hero-soft: #9AA5AD;
+    --hero-line: #2C353C;
+    --hero-accent: #5CBBD9;
+    --btn-ink: #FFFFFF;
+
+    --sans: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101418;
+      --panel: #1A2026;
+      --ink: #E6E9E8;
+      --soft: #97A1A8;
+      --line: #2D363C;
+      --accent: #5CBBD9;
+      --hero: #0A0D10;
+      --btn-ink: #101418;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+  .mono { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; }
+
+  /* ---------- nav (pinned) ---------- */
+  html { scroll-padding-top: 76px; }
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: var(--bg);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid transparent;
+    transition: border-color .2s;
+  }
+  .topbar.scrolled { border-bottom-color: var(--line); }
+  nav { height: 60px; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-weight: 600; font-size: 15px; text-decoration: none; color: var(--ink); font-family: var(--mono); }
+  .logo::before { content: "~/ "; color: var(--soft); }
+  .navr { display: flex; align-items: center; gap: 24px; }
+  nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; }
+  nav ul a { text-decoration: none; font-size: 14px; color: var(--soft); }
+  nav ul a:hover { color: var(--ink); }
+  .lang { display: flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--panel); }
+  .lang button {
+    font-family: var(--mono); font-size: 12px; font-weight: 500;
+    padding: 5px 11px; border: 0; background: transparent; color: var(--ink); cursor: pointer;
+  }
+  .lang button[aria-pressed="true"] { background: var(--ink); color: var(--panel); }
+  .lang button:not([aria-pressed="true"]):hover { background: var(--bg); }
+
+  /* ---------- hero (fits one screen) ---------- */
+  .hero {
+    min-height: calc(100vh - 60px);
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 24px;
+    padding-bottom: 24px;
+    align-items: stretch;
+  }
+  .who { display: flex; flex-direction: column; justify-content: space-between; gap: 24px; padding: 6px 0; }
+  .loc { color: var(--soft); display: inline-flex; align-items: center; gap: 8px; }
+  .loc::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #2DA44E; }
+  h1 { font-weight: 700; font-size: clamp(38px, 4.6vw, 62px); line-height: 1.05; letter-spacing: -.02em; margin: 14px 0 16px; }
+  .role { font-size: 19px; line-height: 1.5; max-width: 34ch; margin: 0; }
+  .role b { font-weight: 600; }
+
+  .id-row { display: flex; gap: 18px; align-items: flex-end; }
+  .photo { flex: 0 0 auto; width: clamp(112px, 11vw, 150px); aspect-ratio: 4/5; border-radius: 8px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); position: relative; display: grid; place-items: center; }
+  .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .photo span { font-weight: 600; font-size: 40px; color: var(--soft); }
+  .contact { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 6px;
+    font-weight: 500; font-size: 14px; text-decoration: none;
+    border: 1px solid var(--ink); color: var(--ink); background: transparent;
+    transition: background .15s, color .15s;
+  }
+  .btn.solid { background: var(--ink); color: var(--btn-ink); }
+  .btn:hover { background: var(--panel); color: var(--ink); }
+  .btn.solid:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .phone { font-family: var(--mono); font-size: 13px; text-decoration: none; color: var(--soft); }
+  .phone:hover { color: var(--ink); text-decoration: underline; }
+
+  /* ---------- impact panel ---------- */
+  .impact {
+    background: var(--hero); color: var(--hero-ink);
+    border: 1px solid var(--hero-line); border-radius: 8px;
+    padding: clamp(20px, 2.4vw, 34px);
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .impact .mono { color: var(--hero-soft); line-height: 1.5; }
+  .impact .mono a { color: var(--hero-accent); text-decoration: none; }
+  .impact .mono a:hover { text-decoration: underline; }
+  .impact h2 { font-weight: 600; font-size: clamp(24px, 2.5vw, 34px); line-height: 1.15; letter-spacing: -.015em; margin: 8px 0 0; max-width: 24ch; }
+  .impact h2 em { font-style: normal; color: var(--hero-accent); }
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--hero-line); border: 1px solid var(--hero-line); border-radius: 6px; overflow: hidden; }
+  .stat { background: var(--hero); padding: 11px 15px 12px; }
+  .stat strong { display: block; font-weight: 700; font-size: clamp(24px, 2.5vw, 34px); line-height: 1.05; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: #fff; }
+  .stat strong small { font-size: .5em; color: var(--hero-accent); margin-left: 3px; font-weight: 600; }
+  .stat p { margin: 4px 0 0; font-size: 13px; line-height: 1.35; color: var(--hero-soft); }
+  /* search demo: select a motif, find the designs that contain it */
+  .demo { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .demo svg { display: block; width: 100%; height: auto; }
+  /* desktop: the hero is exactly one screen tall and the demo takes whatever height is left */
+  @media (min-width: 961px) {
+    .hero { height: calc(100vh - 60px); min-height: 560px; }
+    .impact { min-height: 0; }
+    .demo { flex: 1 1 0; min-height: 90px; }
+    .demo svg { flex: 1 1 0; min-height: 0; height: 100%; }
+  }
+  .demo .body { fill: #181F25; stroke: #343F47; stroke-width: 1; }
+  .demo .band, .demo .ln, .demo .bc { fill: #313B43; }
+  .demo .blk { fill: #1F272E; stroke: #2E383F; stroke-width: 1; }
+  .demo .em circle { fill: none; stroke: #8A959D; stroke-width: 1.4; }
+  .demo .em path, .demo .em .sun { fill: #8A959D; stroke: none; }
+  .demo .em.on circle { stroke: var(--hero-accent); }
+  .demo .em.on path, .demo .em.on .sun { fill: var(--hero-accent); }
+  .demo .sel, .demo .hl { fill: rgba(92, 187, 217, .14); stroke: var(--hero-accent); stroke-width: 1.5; }
+  .demo .sel { stroke-dasharray: 4 3; }
+  .demo .sel.lock { stroke-dasharray: none; }
+  .demo .arrow { fill: none; stroke: var(--hero-soft); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .demo .board { stroke: #3A3029; stroke-width: 1; }
+  .demo .gr { fill: none; stroke: #3A3029; stroke-linecap: round; }
+  .demo .gr2 { fill: none; stroke: #4D3F34; stroke-linecap: round; }
+  .demo .pore { fill: none; stroke: #120E0B; stroke-linecap: round; opacity: .8; }
+  .demo .knot .kb { fill: #17120F; stroke: #6E5949; }
+  .demo .knot .kr { fill: none; stroke: #5A483B; }
+  .demo .knot .kc { fill: #75604E; }
+  .demo .crack { fill: #0A0807; stroke: #54443A; stroke-width: .4; stroke-linejoin: round; }
+  .demo .mat { stroke: #3A3F44; stroke-width: 1; }
+  .demo .vein { fill: none; stroke: #C9C4BA; stroke-linecap: round; stroke-linejoin: round; opacity: .8; }
+  .demo .vein2 { fill: none; stroke: #8E8981; stroke-linecap: round; stroke-linejoin: round; opacity: .45; }
+  .demo .speck { fill: none; stroke: #55524C; stroke-linecap: round; }
+  .demo .pebble { fill: #3A2E27; opacity: .7; }
+  .demo .brush { fill: none; stroke: #8C969D; opacity: .35; }
+  .demo .brush2 { fill: none; stroke: #23292D; opacity: .4; }
+  .demo .thread { fill: #3C4350; }
+  .demo .thread2 { fill: #343A45; }
+  .demo text { font-family: var(--mono); }
+  .demo .cls text { fill: var(--hero-ink); transition: fill .3s; }
+  .demo .cls .track { fill: #222A30; }
+  .demo .cls .bar { fill: #5C666D; transition: fill .3s; }
+  .demo .cls.on text { fill: var(--hero-accent); }
+  .demo .cls.on .bar { fill: var(--hero-accent); }
+  .demo .cls.dim text { fill: #5C666D; }
+  .demo .chip rect { fill: rgba(92, 187, 217, .14); stroke: var(--hero-accent); stroke-width: 1; }
+  .demo .chip text { fill: var(--hero-accent); letter-spacing: .06em; }
+  .demo .mk { fill: none; stroke: #8A959D; stroke-width: 1; stroke-linejoin: round; }
+  .demo .mkf { fill: #8A959D; }
+  .demo .dmk { fill: none; stroke: var(--hero-accent); stroke-width: 1.3; stroke-linejoin: round; }
+  .demo .dmkf { fill: var(--hero-accent); }
+  .demo .dlab { fill: var(--hero-accent); }
+  .demo .mini-em { fill: none; stroke: #6F7A82; stroke-width: .8; }
+  .demo .probe { fill: none; stroke: var(--hero-accent); stroke-width: 1.2; }
+  .demo .cand { fill: none; stroke: var(--hero-accent); stroke-width: 1; stroke-dasharray: 3 2; }
+  .demo .det { fill: none; stroke: #9AA5AD; stroke-width: 1; stroke-dasharray: 3 2; }
+  .demo .scan { stroke: var(--hero-accent); stroke-width: 1.5; }
+  .demo .rip { fill: none; stroke: var(--hero-accent); stroke-width: 1.5; }
+  .demo-foot { display: flex; align-items: center; gap: 10px; }
+  .dots { display: flex; flex: none; }
+  .dots button {
+    width: 16px; height: 16px; padding: 4px; border: 0; border-radius: 6px; cursor: pointer;
+    background: #3A454D; background-clip: content-box;
+    transition: width .3s, background-color .3s;
+  }
+  .dots button:hover { background-color: var(--hero-soft); }
+  .dots button[aria-current="true"] { width: 28px; background-color: var(--hero-accent); }
+  .demo figcaption { display: grid; }
+  .demo figcaption span { grid-area: 1 / 1; transition: opacity .4s; }
+  .demo .cur { fill: #fff; stroke: #0A0D10; stroke-width: 1; stroke-linejoin: round; }
+  .impact-foot { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: auto; }
+  .more { color: #0A0D10; background: var(--hero-accent); text-decoration: none; font-weight: 500; font-size: 14px; padding: 9px 16px; border-radius: 6px; display: inline-flex; gap: 8px; }
+  .more:hover { background: #8AD3EA; }
+  .impact-foot .down { color: var(--hero-soft); text-decoration: none; }
+  .impact-foot .down:hover { color: #fff; }
+
+  /* ---------- sections ---------- */
+  section { padding: 72px 0 0; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; border-top: 1px solid var(--ink); padding-top: 14px; margin-bottom: 28px; }
+  .sec-head .mono { color: var(--soft); }
+  h2.t { font-weight: 600; letter-spacing: -.015em; font-size: 28px; line-height: 1.2; margin: 0; }
+  h2.t em { font-style: normal; color: var(--accent); }
+
+  .work { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px 20px 18px; display: flex; flex-direction: column; }
+  .card:hover { border-color: var(--soft); }
+  .card h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; margin: 0 0 8px; }
+  .card p { margin: 0 0 16px; color: var(--soft); font-size: 14.5px; line-height: 1.55; }
+  .card .more-link { margin-top: auto; font-family: var(--mono); font-size: 12px; }
+
+  .stack { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: auto 0 0; padding: 0; }
+  .stack li { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 3px 9px 3px 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); line-height: 1.4; }
+  .stack li.ni { padding-left: 9px; }
+  .stack i { width: 18px; height: 18px; border-radius: 50%; background: #fff; display: grid; place-items: center; flex: 0 0 auto; }
+  .stack img { width: 12px; height: 12px; display: block; }
+
+  /* experience */
+  .job { display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 24px 0; border-top: 1px solid var(--line); }
+  .sec-head + .job { border-top: 0; padding-top: 0; }
+  .when { font-family: var(--mono); font-size: 12.5px; color: var(--soft); line-height: 1.7; }
+  .when b { color: var(--ink); font-weight: 500; display: block; }
+  .job h3 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; }
+  .job .org { font-size: 15px; margin: 2px 0 12px; color: var(--soft); }
+  .job .org a { color: var(--accent); text-decoration: none; }
+  .job .org a:hover { text-decoration: underline; }
+  .job ul.points { margin: 0; padding-left: 20px; max-width: 80ch; }
+  .job ul.points li { margin-bottom: 8px; font-size: 15px; }
+  .job ul.points li::marker { color: var(--soft); }
+  .job .techline { margin-top: 14px; font-family: var(--mono); font-size: 12px; color: var(--soft); max-width: 80ch; line-height: 1.8; }
+
+  /* education / languages / toolkit */
+  .cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 720px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px; }
+  .box h3 { margin: 0 0 14px; color: var(--soft); font-weight: 500; text-transform: uppercase; }
+  .edu-t { font-size: 18px; font-weight: 600; line-height: 1.3; margin: 0; }
+  .edu-s { color: var(--soft); margin: 6px 0 0; font-size: 15px; }
+  .langs { list-style: none; margin: 0; padding: 0; }
+  .langs li { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 500; }
+  .langs li:last-child { border: 0; padding-bottom: 0; }
+  .langs span { font-family: var(--mono); font-size: 12px; color: var(--soft); font-weight: 400; }
+  .skills { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+  .skills li { padding: 4px 11px; border: 1px solid var(--line); border-radius: 4px; font-size: 13.5px; background: var(--bg); }
+
+  footer { margin-top: 80px; border-top: 1px solid var(--line); padding: 32px 0 40px; }
+  footer h2 { font-weight: 600; letter-spacing: -.015em; font-size: 24px; line-height: 1.25; margin: 0 0 18px; }
+  footer .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  footer small { display: block; margin-top: 28px; color: var(--soft); font-family: var(--mono); font-size: 12px; }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+    .job { grid-template-columns: 1fr; gap: 6px; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 18px; }
+    nav ul { display: none; }
+    .navr { gap: 0; }
+    .photo { width: 96px; }
+    .stat { padding: 12px; }
+    .stat p { font-size: 12.5px; }
+    section { padding-top: 56px; }
+  }
+  /* short laptop screens: keep the whole panel inside the first screen */
+  @media (min-width: 961px) and (max-height: 780px) {
+    h1 { font-size: clamp(36px, 4vw, 52px); margin: 10px 0 12px; }
+    .role { font-size: 17px; }
+    .impact { gap: 14px; padding: 20px 26px; }
+    .stat { padding: 8px 13px 9px; }
+    .stat strong { font-size: 26px; }
+    .stat p { font-size: 12px; margin-top: 3px; }
+    .photo { width: 104px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+<div class="wrap">
+  <nav>
+    <a class="logo" href="#top" data-de="dmytro-sahoruiko">dmytro-zahoruiko</a>
+    <div class="navr">
+      <ul>
+        <li><a href="#work" data-de="Projekte">Work</a></li>
+        <li><a href="#experience" data-de="Erfahrung">Experience</a></li>
+        <li><a href="#about" data-de="Ausbildung">Education</a></li>
+        <li><a href="#contact" data-de="Kontakt">Contact</a></li>
+      </ul>
+      <div class="lang" role="group" aria-label="Language / Sprache">
+        <button type="button" data-l="en" aria-pressed="true">EN</button>
+        <button type="button" data-l="de" aria-pressed="false">DE</button>
+      </div>
+    </div>
+  </nav>
+</div>
+</div>
+
+<div class="wrap">
+  <header class="hero" id="top">
+    <div class="who">
+      <div>
+        <span class="mono loc" data-de="Düsseldorf, Deutschland">Düsseldorf, Germany</span>
+        <h1 data-de="Dmytro Sahoruiko">Dmytro Zahoruiko</h1>
+        <p class="role" data-de="<b>KI- / Computer-Vision-Engineer.</b> Ich baue skalierbare KI-basierte Systeme und bringe sie vom PoC in den stabilen Produktivbetrieb."><b>AI / Computer Vision engineer.</b> I build scalable AI-based systems and take them from proof of concept to stable production.</p>
+      </div>
+      <div class="id-row">
+        <div class="photo">
+          <span aria-hidden="true" data-de="DS">DZ</span>
+          <img src="photo.jpg" alt="Portrait of Dmytro Zahoruiko" onerror="this.remove()">
+        </div>
+        <div class="contact">
+          <a class="btn solid" href="https://www.linkedin.com/in/zzzzauber/" target="_blank" rel="noopener">LinkedIn ↗</a>
+          <a class="btn" href="mailto:zahoruikodmytro1995@gmail.com" data-de="E-Mail schreiben">Email me</a>
+          <a class="phone" href="tel:+491784919857">+49 178 491 9857</a>
+        </div>
+      </div>
+    </div>
+
+    <aside class="impact" aria-labelledby="impact-h">
+      <div>
+        <span class="mono" data-de="Aktuell · AI Engineer @ <a href='https://www.saueressig.com/saueressig-mimic-matches/' target='_blank' rel='noopener'>SAUERESSIG Group</a> · seit 11/2023">Now · AI Engineer @ <a href="https://www.saueressig.com/en/saueressig-mimic-matches-2/" target="_blank" rel="noopener">SAUERESSIG Group</a> · since 11/2023</span>
+        <h2 id="impact-h" data-de="Vom Prototyp zur Plattform, <em>auf die Kunden bauen.</em>">One prototype, turned into a platform <em>clients depend on.</em></h2>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><strong data-de="&gt;99,9<small>%</small>">&gt;99.9<small>%</small></strong><p data-de="Uptime einer produktiven Such-Plattform im Multi-Client-Betrieb">uptime for a multi-client, production search platform</p></div>
+        <div class="stat"><strong>−90<small>%</small></strong><p data-de="AWS-Kosten, nach dem Wechsel der Vektordatenbank zu PostgreSQL und der Optimierung der Embedding-Pipeline">AWS cost, after changing the vector database to PostgreSQL and optimizing the embedding pipeline</p></div>
+        <div class="stat"><strong data-de="Millionen">Millions</strong><p data-de="an Bild- und Text-Assets, verarbeitet über ein asynchrones FastAPI-Backend">of image and text assets indexed through an async FastAPI backend</p></div>
+        <div class="stat"><strong>4→20</strong><p data-de="Services: von vier Containern zum mandantenfähigen System mit 591 automatisierten Tests">services: from four containers to a multi-tenant system with 591 automated tests</p></div>
+      </div>
+
+      <figure class="demo" id="demo">
+        <svg viewBox="0 0 512 210" preserveAspectRatio="xMinYMid meet" aria-hidden="true" focusable="false"></svg>
+        <div class="demo-foot">
+        <div class="dots">
+          <button type="button" aria-label="1 / 4" aria-current="true"></button>
+          <button type="button" aria-label="2 / 4" aria-current="false"></button>
+          <button type="button" aria-label="3 / 4" aria-current="false"></button>
+          <button type="button" aria-label="4 / 4" aria-current="false"></button>
+        </div>
+        <figcaption class="mono">
+          <span data-de="Element auf einem Design markieren → alle Designs finden, die es enthalten">Mark an element on one design → find every design that contains it</span>
+          <span data-de="Äste, Risse und Spalten werden erkannt → eins anklicken, Dekore mit ähnlichen finden" style="opacity:0">Knots, cracks and splits are detected → click one to find decors with similar ones</span>
+          <span data-de="Neue Dekore werden gescannt und klassifiziert: Holz, Stein, Leder, Metall oder Textil" style="opacity:0">New decors are scanned and classified: wood, stone, leather, metal or textile</span>
+          <span data-de="Unter Millionen das fast identische Design finden und sehen, was abweicht, bis auf einen Pixel" style="opacity:0">Find the near-identical design among millions and see exactly what differs, down to a single pixel</span>
+        </figcaption>
+        </div>
+      </figure>
+
+      <div class="impact-foot">
+        <a class="more" data-case href="rebuilding_matches.html"><span data-de="Case Study lesen">Read the case study</span> <span aria-hidden="true">→</span></a>
+        <a href="#work" class="mono down" data-de="Alle Projekte ↓">All projects ↓</a>
+      </div>
+    </aside>
+  </header>
+</div>
+
+<main>
+  <section id="work">
+    <div class="wrap">
+      <div class="sec-head"><span class="mono">01</span><h2 class="t" data-de="Was ich <em>konkret gebaut habe</em>">What I <em>actually built</em></h2></div>
+      <div class="work">
+        <article class="card">
+          <h3 data-de="Multimodale Such- und Analyseplattform">Multimodal search &amp; analysis platform</h3>
+          <p data-de="Bild- und Text-Retrieval über Millionen von Enterprise-Assets. Vom nicht produktionsfähigen PoC zum stabilen Multi-Client-Produkt, betrieben On-Prem und in der Cloud.">Image and text retrieval over millions of enterprise assets. Took it from a PoC that couldn't ship to a stable multi-client product, deployed both on-prem and in the cloud.</p>
+          <ul class="stack">
+            <li><i><img src="icons/fastapi.svg" alt=""></i>FastAPI</li>
+            <li><i><img src="icons/celery.svg" alt=""></i>Celery</li>
+            <li><i><img src="icons/rabbitmq.svg" alt=""></i>RabbitMQ</li>
+            <li><i><img src="icons/docker.svg" alt=""></i>Docker</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 data-de="Vektorsuche, die 90% weniger kostet">Vector search that costs 90% less</h3>
+          <p data-de="Retrieval von einem HNSW-Index im Arbeitsspeicher (Weaviate) auf PostgreSQL mit pgvector und DiskANN umgezogen und die Dimensionalität der Embeddings ohne nennenswerten Qualitätsverlust reduziert. Ergebnis: 90% niedrigere AWS-Kosten.">Moved retrieval from an in-memory HNSW index (Weaviate) to PostgreSQL with pgvector and DiskANN, and lowered the embedding dimensionality without significant quality loss. Result: the AWS bill fell by 90%.</p>
+          <ul class="stack">
+            <li><i><img src="icons/postgresql.svg" alt=""></i>PostgreSQL</li>
+            <li class="ni">pgvector</li>
+            <li class="ni">DiskANN</li>
+            <li class="ni">Weaviate</li>
+            <li><i><img src="icons/apachesolr.svg" alt=""></i>Solr</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 data-de="Mehrstufige Computer-Vision-Pipelines">Multi-stage computer-vision pipelines</h3>
+          <p data-de="Objekterkennung und Region-of-Interest-Extraktion für Druck- und Verpackungsmotive, auf hohen Recall ausgelegt. Dazu ein regelbasierter Oberflächenprüfer, der ein KI-Modell ersetzt hat: mehr als zehnmal schneller (7,5 s → 0,6 s pro Bogen), ohne GPU im On-Prem-Betrieb.">Object detection and region-of-interest extraction for print and packaging artwork, tuned for high recall. Includes a rule-based surface inspector that replaced an AI model: over 10× faster (7.5 s → 0.6 s per sheet), no GPU needed to run on-prem.</p>
+          <ul class="stack">
+            <li><i><img src="icons/pytorch.svg" alt=""></i>PyTorch</li>
+            <li class="ni">OpenCLIP</li>
+            <li class="ni">DINO</li>
+            <li><i><img src="icons/opencv.svg" alt=""></i>OpenCV</li>
+            <li class="ni">OCR</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 data-de="Pixelgenaue Suche in Millionen Bildern">Pixel-exact search across millions of images</h3>
+          <p data-de="Findet Designs, die sich von der Vorlage nur um wenige Pixel unterscheiden, bis hin zu einem einzigen: dieselbe Verpackung ohne ein kleines technisches Zeichen oder mit einem zusätzlichen Logo. Die Suche dauert Sekunden; ein direkter Pixelvergleich mit jeder Datei im Archiv würde Stunden bis Tage dauern.">Finds designs that differ from the query by just a few pixels, down to a single one: the same packaging without a tiny technical mark, or with one small extra logo. The search takes seconds; comparing every pixel against every file in the archive directly would take hours to days.</p>
+          <ul class="stack">
+            <li><i><img src="icons/opencv.svg" alt=""></i>OpenCV</li>
+            <li><i><img src="icons/postgresql.svg" alt=""></i>PostgreSQL</li>
+            <li class="ni">pgvector</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 data-de="Sicher, beobachtbar, in der Cloud">Secure, observable, in the cloud</h3>
+          <p data-de="JWT-Authentifizierung, drei Zugriffsrollen und Rate Limiting; Monitoring mit Prometheus und Grafana; AWS-EC2-Deployments mit CloudFormation; ein Bash-Installer/-Updater, der ein vollständiges Kunden-Deployment einrichtet oder aktualisiert, und eine CI/CD-Pipeline, die pro Release alle Docker-Images baut, sowie eine automatisierte Test-Pipeline, die jeden API-Endpunkt abdeckt.">JWT authentication, three access roles and rate limiting; Prometheus and Grafana monitoring; AWS EC2 deployments with CloudFormation; a bash installer/updater that sets up or upgrades a full customer deployment, and a CI/CD pipeline that builds all Docker images per release, plus an automated test pipeline covering every API endpoint.</p>
+          <ul class="stack">
+            <li><i><img src="icons/jsonwebtokens.svg" alt=""></i>JWT</li>
+            <li><i><img src="icons/prometheus.svg" alt=""></i>Prometheus</li>
+            <li><i><img src="icons/grafana.svg" alt=""></i>Grafana</li>
+            <li><i><img src="icons/aws.svg" alt=""></i>AWS</li>
+            <li><i><img src="icons/githubactions.svg" alt=""></i>GitHub Actions</li>
+          </ul>
+        </article>
+        <article class="card">
+          <h3 data-de="Nah am Kunden">Close to the customer</h3>
+          <p data-de="Anforderungsanalyse, Integrations-Workshops und Rollout gemeinsam mit Kunden und internen Stakeholdern, denn ein System zählt erst, wenn es genutzt wird.">Requirements analysis, integration workshops and hands-on rollout with clients and internal stakeholders, because a system only counts once someone uses it.</p>
+          <a class="more-link" data-case href="rebuilding_matches.html" data-de="Vollständige Case Study →">Full case study →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <div class="wrap">
+      <div class="sec-head"><span class="mono">02</span><h2 class="t" data-de="Berufserfahrung">Experience</h2></div>
+
+      <div class="job">
+        <div class="when" data-de="<b>11/2023 – heute</b>Vreden, Deutschland"><b>11/2023 – today</b>Vreden, Germany</div>
+        <div>
+          <h3>AI Engineer (Computer Vision)</h3>
+          <div class="org" data-de="<a href='https://www.saueressig.com/saueressig-mimic-matches/' target='_blank' rel='noopener'>SAUERESSIG Group ↗</a>"><a href="https://www.saueressig.com/en/saueressig-mimic-matches-2/" target="_blank" rel="noopener">SAUERESSIG Group ↗</a></div>
+          <ul class="points">
+            <li data-de="Entwicklung, Aufbau und Produktivsetzung einer KI-basierten multimodalen Such- und Analyseplattform (Bild- und Text-Retrieval) von einem nicht produktionsfähigen PoC zu einer stabilen Enterprise-Lösung (&gt;99,9% Uptime, Multi-Client-Betrieb).">Designed, developed and deployed a production-grade AI-based multimodal search and analytics platform (image and text retrieval), turning a non-production PoC into a stable enterprise solution: &gt;99.9% uptime, multi-tenant.</li>
+            <li data-de="Aufbau eines asynchronen Backends zur Verarbeitung großer Mengen produktiver Bild- und Textdaten (Millionen Assets) bei responsiven Nutzer-APIs für Suche, Indexierung und Analytics.">Built an asynchronous backend that processes large-scale production image and text data (millions of assets) while keeping the search, indexing and analytics APIs responsive.</li>
+            <li data-de="Entwicklung mehrstufiger Computer-Vision-Pipelines für Enterprise-Bilddaten mit hohen Recall-Anforderungen und dichten Objektverteilungen.">Developed multi-stage computer vision pipelines for enterprise image data with high recall requirements and dense object distributions.</li>
+            <li data-de="Implementierung einer einheitlichen Hybridsuche, die metadatenbasierte, Volltext-, semantische und visuelle Suche in einem System vereint.">Implemented a unified hybrid search that combines metadata-based, full-text, semantic and visual retrieval in a single system.</li>
+            <li data-de="Umzug des Retrievals von einem HNSW-Index im Arbeitsspeicher (Weaviate) auf PostgreSQL mit pgvector und DiskANN sowie Reduzierung der Dimensionalität der Embeddings ohne nennenswerten Qualitätsverlust. Ergebnis: 90% niedrigere AWS-Kosten.">Moved retrieval from an in-memory HNSW index (Weaviate) to PostgreSQL with pgvector and DiskANN, and lowered the embedding dimensionality without significant quality loss. Result: the AWS bill fell by 90%.</li>
+            <li data-de="Ermöglichung von Cloud-Deployments in enger Zusammenarbeit mit einem Integrationspartner und durch konfigurierbare KI-Worker-Profile, die die Rechenlast steuern und sich an wechselnde Kundenprioritäten anpassen lassen.">Enabled cloud deployments by working closely with an integration partner and implementing configurable AI worker profiles that balance compute usage and adapt to changing customer priorities.</li>
+            <li data-de="Integration von OCR-basierter Textextraktion für industrielle Bilddaten, um Enterprise-Suchabläufe um visuell eingebettete Metadaten zu erweitern.">Integrated OCR-based text extraction for industrial image data to enrich enterprise search workflows with visually embedded metadata.</li>
+            <li data-de="Umsetzung produktionsreifer Sicherheits- und Zugriffskonzepte (JWT-Authentifizierung, rollenbasierte Zugriffskontrolle) sowie Observability zur Sicherstellung von Systemstabilität und Verfügbarkeit.">Implemented production-grade security (JWT authentication, role-based access control) and observability to ensure system stability and availability.</li>
+            <li data-de="Aufbau einer CI/CD-Pipeline, die pro Release alle Docker-Images baut, sowie einer automatisierten Test-Pipeline, die jeden API-Endpunkt abdeckt.">Built a CI/CD pipeline that builds all Docker images per release, plus an automated test pipeline covering every API endpoint.</li>
+            <li data-de="Enge Zusammenarbeit mit Kunden und internen Stakeholdern: Workshops, Anforderungsanalyse und produktive Deployments in On-Prem- und Cloud-Umgebungen.">Worked closely with customers and internal stakeholders through workshops, requirements analysis and production deployments in on-prem and cloud environments.</li>
+          </ul>
+          <div class="techline">Python · FastAPI · Celery · RabbitMQ · Uvicorn · PyTorch · Hugging Face · OpenCV · LLMs · OCR · PostgreSQL (pgvector, DiskANN) · Weaviate · Solr · Docker · AWS · GitHub Actions · Prometheus · Grafana · JWT</div>
+        </div>
+      </div>
+
+      <div class="job">
+        <div class="when" data-de="<b>03/2022 – 11/2023</b>Deutschland"><b>03/2022 – 11/2023</b>Germany</div>
+        <div>
+          <h3 data-de="Umzug &amp; Selbststudium">Relocation &amp; self-study</h3>
+          <ul class="points">
+            <li data-de="Umzug nach Deutschland und Deutschkurs bis B1.">Moved to Germany and completed a German course up to B1.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="job">
+        <div class="when" data-de="<b>11/2021 – 02/2022</b>Charkiw, Ukraine"><b>11/2021 – 02/2022</b>Kharkiv, Ukraine</div>
+        <div>
+          <h3>AI Engineer</h3>
+          <div class="org"><a href="https://mobidev.biz/" target="_blank" rel="noopener">MobiDev ↗</a></div>
+          <ul class="points">
+            <li data-de="Entwicklung und Training von End-to-End-Computer-Vision-Pipelines, einschließlich Image-Captioning- und Bildsegmentierungsmodellen.">Built and trained end-to-end computer-vision pipelines, including image-captioning and image-segmentation models.</li>
+            <li data-de="Implementierung von Encoder-Decoder-Architekturen mit vortrainierten CNN-Backbones und aufmerksamkeitsbasierten Sequenzmodellen.">Implemented encoder-decoder architectures with pretrained CNN backbones and attention-based sequence models.</li>
+            <li data-de="Aufbau von Datenvorverarbeitungs-, Trainings-, Evaluierungs- und Inferenzpipelines mit reproduzierbaren Experimenten und Performance-Logging.">Set up preprocessing, training, evaluation and inference pipelines with reproducible experiments and performance logging.</li>
+            <li data-de="Evaluation der Modellleistung mit NLP- und CV-Metriken (BLEU, ROUGE) und Visualisierung der Ergebnisse mit TensorBoard.">Evaluated models with NLP and CV metrics (BLEU, ROUGE) and visualised results in TensorBoard.</li>
+          </ul>
+          <div class="techline">Python · PyTorch · torchvision · PIL · TensorBoard</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head"><span class="mono">03</span><h2 class="t" data-de="Ausbildung, <em>Sprachen &amp; Toolkit</em>">Education, <em>languages &amp; toolkit</em></h2></div>
+      <div class="cols">
+        <div class="box">
+          <h3 class="mono" data-de="Ausbildung">Education</h3>
+          <p class="edu-t">B.Sc. Computer Engineering</p>
+          <p class="edu-s" data-de="Nationale Universität für Luft- und Raumfahrt, Charkiw, Ukraine<br>09/2013 – 06/2017">National Aerospace University, Kharkiv, Ukraine<br>09/2013 – 06/2017</p>
+        </div>
+        <div class="box">
+          <h3 class="mono" data-de="Sprachen">Languages</h3>
+          <ul class="langs">
+            <li data-de="Deutsch <span>C1</span>">German <span>C1</span></li>
+            <li data-de="Englisch <span>C1</span>">English <span>C1</span></li>
+            <li data-de="Ukrainisch <span>Muttersprache</span>">Ukrainian <span>Native</span></li>
+          </ul>
+        </div>
+        <div class="box" style="grid-column: 1 / -1">
+          <h3 class="mono" data-de="Kenntnisse">Toolkit</h3>
+          <ul class="skills">
+            <li>Python</li><li>PyTorch</li><li>Computer Vision</li><li>Machine Learning</li>
+            <li>OpenCV</li><li>Hugging Face</li><li>LLMs</li><li>OCR</li>
+            <li>FastAPI</li><li>Celery</li><li>Uvicorn</li><li>RabbitMQ</li>
+            <li>PostgreSQL</li><li>pgvector</li><li>Weaviate</li><li>Solr</li>
+            <li>Docker</li><li>AWS (EC2, CloudFormation)</li><li>GitHub Actions</li><li>Prometheus &amp; Grafana</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer id="contact">
+  <div class="wrap">
+    <h2 data-de="Kontakt">Get in touch</h2>
+    <div class="links">
+      <a class="btn solid" href="mailto:zahoruikodmytro1995@gmail.com">zahoruikodmytro1995@gmail.com</a>
+      <a class="btn" href="tel:+491784919857">+49 178 491 9857</a>
+      <a class="btn" href="https://www.linkedin.com/in/zzzzauber/" target="_blank" rel="noopener">LinkedIn ↗</a>
+      <a class="btn" data-case href="rebuilding_matches.html" data-de="Case Study: Matches neu aufgebaut">Case study: Rebuilding Matches</a>
+    </div>
+    <small data-de="© 2026 Dmytro Sahoruiko · Düsseldorf, Deutschland · <a href='impressum.html'>Impressum</a>">© 2026 Dmytro Zahoruiko · Düsseldorf, Germany · <a href="impressum.html">Impressum</a></small>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var TITLES = {
+    en: "Dmytro Zahoruiko — AI / Computer Vision Engineer",
+    de: "Dmytro Sahoruiko — KI- / Computer-Vision-Engineer"
+  };
+  var CASE = { en: "rebuilding_matches.html", de: "rebuilding_matches.de.html" };
+  var nodes = document.querySelectorAll("[data-de]");
+  nodes.forEach(function (el) { el.setAttribute("data-en", el.innerHTML); });
+
+  function apply(lang) {
+    document.documentElement.lang = lang;
+    document.title = TITLES[lang];
+    nodes.forEach(function (el) { el.innerHTML = el.getAttribute("data-" + lang); });
+    document.querySelectorAll("a[data-case]").forEach(function (a) { a.setAttribute("href", CASE[lang]); });
+    document.querySelectorAll(".lang button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.l === lang));
+    });
+  }
+
+  function initial() {
+    var p = new URLSearchParams(location.search).get("lang");
+    if (p === "de" || p === "en") return p;
+    try { var s = localStorage.getItem("lang"); if (s === "de" || s === "en") return s; } catch (e) {}
+    return "en";
+  }
+
+  document.querySelectorAll(".lang button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var lang = b.dataset.l;
+      apply(lang);
+      try { localStorage.setItem("lang", lang); } catch (e) {}
+      var u = new URL(location.href); u.searchParams.set("lang", lang);
+      try { history.replaceState(null, "", u); } catch (e) {}
+    });
+  });
+
+  apply(initial());
+
+  // show a divider under the pinned bar once the page is scrolled
+  var bar = document.querySelector(".topbar");
+  function onScroll() { bar.classList.toggle("scrolled", window.scrollY > 4); }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+})();
+
+/* search demo, two scenes:
+   1. a motif is marked on a schematic package, then packages that contain it light up
+   2. features (knots, cracks, splits) are detected on a wood decor, one is clicked, similar surfaces light up */
+(function () {
+  var fig = document.getElementById("demo");
+  if (!fig) return;
+  var svg = fig.querySelector("svg"), caps = fig.querySelectorAll("figcaption span");
+  var NS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    (parent || svg).appendChild(e);
+    return e;
+  }
+  function ease(v) { v = v < 0 ? 0 : v > 1 ? 1 : v; return v < .5 ? 2 * v * v : 1 - Math.pow(-2 * v + 2, 2) / 2; }
+  function p(t, a, b) { return ease((t - a) / (b - a)); }
+  function lerp(a, b, k) { return a + (b - a) * k; }
+  function rng(seed) { return function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }; }
+  // box: [x, y, w, h]; scale an element about the box centre
+  function scaleAbout(e, k, b) {
+    var cx = b[0] + b[2] / 2, cy = b[1] + b[3] / 2;
+    e.setAttribute("transform", "translate(" + cx + " " + cy + ") scale(" + k + ") translate(" + -cx + " " + -cy + ")");
+  }
+  function hlRect(b, parent) {
+    return el("rect", { x: b[0], y: b[1], width: b[2], height: b[3], rx: 2, "class": "hl", "vector-effect": "non-scaling-stroke", opacity: 0 }, parent);
+  }
+  function arrow(parent) {
+    var g = el("g", { "class": "arrow" }, parent);
+    // a zero-length line still draws its round cap as a dot, so the shaft stays hidden until it grows
+    var shaft = el("line", { x1: 150, y1: 105, x2: 150, y2: 105, opacity: 0 }, g);
+    var head = el("path", { d: "M182 99L189 105L182 111", opacity: 0 }, g);
+    return { g: g, draw: function (k) {
+      shaft.setAttribute("x2", lerp(150, 188, k));
+      shaft.setAttribute("opacity", k > 0 ? 1 : 0);
+      head.setAttribute("opacity", k > .9 ? 1 : 0);
+    } };
+  }
+  // results: 4 x 2 grid of 70 x 92 thumbnails right of the arrow
+  function cell(i) { return [200 + (i % 4) * 80, 8 + Math.floor(i / 4) * 102]; }
+  function showResults(list, t, appear, mark, out) {
+    list.forEach(function (r, i) {
+      var a = p(t, appear + i * 110, appear + 400 + i * 110);
+      r.g.setAttribute("opacity", a * out);
+      r.g.setAttribute("transform", "translate(0 " + 6 * (1 - a) + ")");
+      var b = p(t, mark + i * 130, mark + 350 + i * 130);
+      r.hl.setAttribute("opacity", b * out);
+      scaleAbout(r.hl, 1.5 - .5 * b, r.box);
+    });
+  }
+
+  /* ---------- scene 1: packaging ---------- */
+  // layouts in fractions of the package's width/height
+  // band: [y, h] · blk: [x, y, w, h] · ln: [[x, y, w]] · bc: [x, y] · em: [cx, cy, diameter as fraction of width]
+  var QUERY = { band: [.05, .06], ln: [[.1, .2, .45], [.1, .27, .3]], blk: [.1, .38, .8, .38], bc: [.1, .84], em: [.74, .22, .3] };
+  var RESULTS = [
+    { ln: [[.5, .14, .4], [.5, .21, .3]], blk: [.1, .34, .8, .42], bc: [.6, .85], em: [.27, .18, .32] },
+    { band: [.06, .07], blk: [.1, .19, .8, .34], ln: [[.2, .86, .6]], em: [.5, .67, .34] },
+    { ln: [[.1, .1, .6], [.1, .17, .45], [.1, .24, .5]], blk: [.1, .34, .8, .38], bc: [.1, .82], em: [.76, .86, .26] },
+    { band: [.05, .05], ln: [[.2, .57, .6], [.3, .64, .4]], bc: [.36, .8], em: [.5, .32, .42] },
+    { blk: [.08, .08, .84, .4], ln: [[.5, .58, .4], [.5, .65, .28]], bc: [.1, .84], em: [.27, .62, .3] },
+    { band: [.05, .06], ln: [[.1, .2, .4]], blk: [.1, .42, .8, .3], bc: [.6, .84], em: [.72, .25, .28] },
+    { ln: [[.1, .1, .8], [.1, .17, .6]], blk: [.58, .32, .32, .26], bc: [.1, .82], em: [.3, .44, .38] },
+    { blk: [.1, .1, .8, .5], ln: [[.1, .7, .55], [.1, .77, .4]], bc: [.62, .84], em: [.68, .48, .26] }
+  ];
+
+  function pack(x, y, w, h, L, parent) {
+    var g = el("g", {}, parent);
+    el("rect", { x: x, y: y, width: w, height: h, rx: 3, "class": "body" }, g);
+    if (L.band) el("rect", { x: x + .06 * w, y: y + L.band[0] * h, width: .88 * w, height: L.band[1] * h, rx: 1, "class": "band" }, g);
+    if (L.blk) el("rect", { x: x + L.blk[0] * w, y: y + L.blk[1] * h, width: L.blk[2] * w, height: L.blk[3] * h, rx: 2, "class": "blk" }, g);
+    (L.ln || []).forEach(function (l) {
+      el("rect", { x: x + l[0] * w, y: y + l[1] * h, width: l[2] * w, height: Math.max(2, .035 * h), rx: 1, "class": "ln" }, g);
+    });
+    if (L.bc) {
+      var bars = [2, 1, 3, 1, 1, 2, 1, 3, 1], units = 0;
+      bars.forEach(function (b) { units += b + 1; });
+      var u = .28 * w / units, bx = x + L.bc[0] * w, by = y + L.bc[1] * h;
+      bars.forEach(function (b) {
+        el("rect", { x: bx, y: by, width: b * u, height: .08 * h, "class": "bc" }, g);
+        bx += (b + 1) * u;
+      });
+    }
+    // the motif: a small mountain-and-sun logo inside a ring
+    var cx = x + L.em[0] * w, cy = y + L.em[1] * h, r = L.em[2] * w / 2;
+    var em = el("g", { "class": "em" }, g);
+    el("circle", { cx: cx, cy: cy, r: r }, em);
+    var pts = [[-.62, .42], [-.18, -.22], [.08, .12], [.3, -.08], [.66, .42]];
+    el("path", { d: "M" + pts.map(function (q) { return (cx + q[0] * r) + " " + (cy + q[1] * r); }).join("L") + "Z" }, em);
+    el("circle", { cx: cx + .32 * r, cy: cy - .44 * r, r: .14 * r, "class": "sun" }, em);
+    var pad = Math.max(2.5, .25 * r);
+    return { g: g, em: em, box: [cx - r - pad, cy - r - pad, 2 * (r + pad), 2 * (r + pad)] };
+  }
+
+  var s1 = el("g", { opacity: 0 });
+  var q1 = pack(8, 15, 130, 180, QUERY, s1);
+  var sel = el("rect", { "class": "sel", rx: 2, opacity: 0 }, s1);
+  var arrow1 = arrow(s1);
+  var results1 = RESULTS.map(function (L, i) {
+    var c = cell(i), r = pack(c[0], c[1], 70, 92, L, s1);
+    r.em.setAttribute("class", "em on");
+    r.hl = hlRect(r.box, s1);
+    return r;
+  });
+
+  /* ---------- scene 2: wood decor ---------- */
+  // kn: knots [cx, cy, radius as fraction of width] · cr: cracks [[x, y], ...] · sp: end splits [x, length as fraction of height]
+  var DECOR = { seed: 7, lines: 12, kn: [[.34, .3, .075], [.7, .72, .06]], cr: [[[.6, .14], [.64, .2], [.61, .27], [.66, .34], [.63, .42]]], sp: [[.2, .16]] };
+  var PICK = 0; // the visitor clicks the first knot
+  var DECORS = [
+    { seed: 11, kn: [[.45, .32, .14]], sp: [[.75, .18]] },
+    { seed: 23, kn: [[.6, .6, .13]], cr: [[[.22, .12], [.28, .22], [.24, .32], [.3, .4]]] },
+    { seed: 5, kn: [[.38, .68, .13]] },
+    { seed: 41, kn: [[.55, .28, .15]], cr: [[[.3, .62], [.25, .72], [.3, .82]]] },
+    { seed: 17, kn: [[.3, .42, .12]], sp: [[.7, .2]] },
+    { seed: 29, kn: [[.66, .5, .14]] },
+    { seed: 3, kn: [[.42, .22, .12]], cr: [[[.7, .55], [.66, .65], [.71, .75], [.68, .85]]] },
+    { seed: 37, kn: [[.5, .74, .13]], sp: [[.25, .15]] }
+  ];
+
+  var defs = el("defs", {}), clips = 0;
+  var halo = el("radialGradient", { id: "demo-knot-halo" }, defs);
+  el("stop", { offset: 0, "stop-color": "#4A3B30", "stop-opacity": .9 }, halo);
+  el("stop", { offset: 1, "stop-color": "#4A3B30", "stop-opacity": 0 }, halo);
+
+  function mix(a, b, k) {
+    var c = "#";
+    for (var i = 1; i < 7; i += 2) {
+      var v = Math.round(lerp(parseInt(a.substr(i, 2), 16), parseInt(b.substr(i, 2), 16), k)).toString(16);
+      c += v.length < 2 ? "0" + v : v;
+    }
+    return c;
+  }
+  function f1(v) { return v.toFixed(1); }
+  // slightly irregular closed outline, used for knots
+  function blob(cx, cy, rx, ry, rand) {
+    var a = rand() * 6.3, b = rand() * 6.3, d = "";
+    for (var i = 0; i < 28; i++) {
+      var t = i / 28 * 6.2832, k = 1 + .07 * Math.sin(3 * t + a) + .04 * Math.sin(5 * t + b);
+      d += (i ? "L" : "M") + f1(cx + Math.cos(t) * rx * k) + " " + f1(cy + Math.sin(t) * ry * k);
+    }
+    return d + "Z";
+  }
+  // a crack as a jagged centre line with a tapered width
+  function crack(pts, width, taper, rand, jitter) {
+    var c = [];
+    pts.forEach(function (q, i) {
+      if (i) for (var s = 1; s < 3; s++) {
+        var o = pts[i - 1], k = s / 3;
+        c.push([lerp(o[0], q[0], k) + (rand() - .5) * jitter, lerp(o[1], q[1], k) + (rand() - .5) * jitter * .4]);
+      }
+      c.push(q);
+    });
+    var left = [], right = [];
+    c.forEach(function (q, i) {
+      var a = c[Math.max(0, i - 1)], b = c[Math.min(c.length - 1, i + 1)];
+      var dx = b[0] - a[0], dy = b[1] - a[1], n = Math.sqrt(dx * dx + dy * dy) || 1;
+      var hw = width * taper(i / (c.length - 1)) / 2 + .15;
+      left.push(f1(q[0] - dy / n * hw) + "," + f1(q[1] + dx / n * hw));
+      right.unshift(f1(q[0] + dy / n * hw) + "," + f1(q[1] - dx / n * hw));
+    });
+    return { points: left.concat(right).join(" "), line: c };
+  }
+  function boxOf(line, pad) {
+    var xs = line.map(function (q) { return q[0]; }), ys = line.map(function (q) { return q[1]; });
+    var x0 = Math.min.apply(0, xs) - pad, y0 = Math.min.apply(0, ys) - pad;
+    return [x0, y0, Math.max.apply(0, xs) + pad - x0, Math.max.apply(0, ys) + pad - y0];
+  }
+
+  function surface(x, y, w, h, S, parent) {
+    var g = el("g", {}, parent), id = "demo-wood-" + clips++, rand = rng(S.seed), sc = w / 130;
+    // board colour drifts a little across the width
+    var tone = el("linearGradient", { id: id + "-tone", x1: 0, y1: 0, x2: 1, y2: .15 }, defs);
+    for (var s = 0; s <= 5; s++) el("stop", { offset: s / 5, "stop-color": mix("#1E1915", "#2C251F", rand()) }, tone);
+    el("rect", { x: x, y: y, width: w, height: h, rx: 3 }, el("clipPath", { id: id }, defs));
+    el("rect", { x: x, y: y, width: w, height: h, rx: 3, fill: "url(#" + id + "-tone)", "class": "board" }, g);
+    var tex = el("g", { "clip-path": "url(#" + id + ")" }, g);
+
+    // grain: contour lines of tree rings, as if the board were sawn at a slight angle to the trunk (cathedral pattern)
+    var knots = (S.kn || []).map(function (k) { return [x + k[0] * w, y + k[1] * h, k[2] * w]; });
+    var L = w / 15, cx = x + w * (.3 + .4 * rand()), z0 = w * (.3 + .3 * rand()), slope = w * (.35 + .35 * rand()) / h;
+    slope = Math.min(slope, (z0 - .12 * w) / h); // keep the cut off the pith, so no closed ovals that look like knots
+    var p1 = rand() * 6.3, p2 = rand() * 6.3;
+    function field(u, v) {
+      var du = u - cx, dz = z0 - slope * (v - y);
+      var r = Math.sqrt(du * du + dz * dz) + L * .35 * Math.sin((v - y) / h * 5 + p1) + L * .25 * Math.sin(du / w * 9 + (v - y) / h * 3 + p2);
+      knots.forEach(function (k) {
+        var a = (u - k[0]) / (k[2] * 1.4), b = (v - k[1]) / (k[2] * 2.2);
+        r -= L * 3.2 * Math.exp(-(a * a + b * b));
+      });
+      return r / L;
+    }
+    var st = 1.4 * Math.max(sc, .7), nx = Math.ceil(w / st), ny = Math.ceil(h / st), F = [], i, j;
+    for (j = 0; j <= ny; j++) { F.push([]); for (i = 0; i <= nx; i++) F[j].push(field(x + i * st, y + j * st)); }
+    var early = "", late = "";
+    for (j = 0; j < ny; j++) for (i = 0; i < nx; i++) {
+      var c4 = [F[j][i], F[j][i + 1], F[j + 1][i + 1], F[j + 1][i]];
+      var xy = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]];
+      var lo = Math.min.apply(0, c4), hi = Math.max.apply(0, c4);
+      for (var lv = Math.ceil(lo); lv <= hi; lv++) {
+        var pts = [];
+        for (var e = 0; e < 4; e++) {
+          var va = c4[e], vb = c4[(e + 1) % 4];
+          if ((va - lv) * (vb - lv) < 0) {
+            var t = (lv - va) / (vb - va), A = xy[e], B = xy[(e + 1) % 4];
+            pts.push(f1(x + lerp(A[0], B[0], t) * st) + " " + f1(y + lerp(A[1], B[1], t) * st));
+          }
+        }
+        for (var q = 0; q + 1 < pts.length; q += 2) {
+          var seg = "M" + pts[q] + "L" + pts[q + 1];
+          if (((lv % 3) + 3) % 3 === 0) late += seg; else early += seg;
+        }
+      }
+    }
+    el("path", { d: early, "class": "gr", "stroke-width": .55 * Math.max(sc, .75) }, tex);
+    el("path", { d: late, "class": "gr2", "stroke-width": 1.1 * Math.max(sc, .75) }, tex);
+
+    // pores: short dashes that follow the grain
+    var pores = "", np = Math.round(w * h / 45);
+    for (i = 0; i < np; i++) {
+      var u = x + rand() * w, v = y + rand() * h;
+      var gx = field(u + .5, v) - field(u - .5, v), gy = field(u, v + .5) - field(u, v - .5), n = Math.sqrt(gx * gx + gy * gy) || 1;
+      var len = (.8 + rand() * 1.6) * Math.max(sc, .7);
+      pores += "M" + f1(u) + " " + f1(v) + "l" + f1(-gy / n * len) + " " + f1(gx / n * len);
+    }
+    el("path", { d: pores, "class": "pore", "stroke-width": .6 * Math.max(sc, .75) }, tex);
+
+    var feats = [];
+    knots.forEach(function (k) {
+      var f = el("g", { "class": "knot" }, tex);
+      el("ellipse", { cx: k[0], cy: k[1], rx: k[2] * 1.5, ry: k[2] * 2.3, fill: "url(#demo-knot-halo)" }, f);
+      el("path", { d: blob(k[0], k[1], k[2], k[2] * 1.5, rand), "class": "kb", "stroke-width": Math.max(.6, .9 * sc) }, f);
+      [.68, .42].forEach(function (s) { el("path", { d: blob(k[0], k[1], k[2] * s, k[2] * 1.5 * s, rand), "class": "kr", "stroke-width": .6 }, f); });
+      el("path", { d: blob(k[0], k[1], k[2] * .16, k[2] * .24, rand), "class": "kc" }, f);
+      var pd = Math.max(2.5, k[2] * .35);
+      feats.push({ el: f, box: [k[0] - k[2] - pd, k[1] - 1.5 * k[2] - pd, 2 * (k[2] + pd), 3 * k[2] + 2 * pd] });
+    });
+    (S.cr || []).forEach(function (c) {
+      var cr = crack(c.map(function (q) { return [x + q[0] * w, y + q[1] * h]; }), 2 * sc + .5, function (t) { return Math.sin(Math.PI * t); }, rand, 3 * sc);
+      feats.push({ el: el("polygon", { points: cr.points, "class": "crack" }, tex), box: boxOf(cr.line, 4) });
+    });
+    (S.sp || []).forEach(function (s) {
+      var sx = x + s[0] * w, len = s[1] * h, line = [];
+      for (var k = 0; k <= 3; k++) line.push([sx + (rand() - .5) * 2 * sc, y + h + 1 - len * k / 3]);
+      var sp = crack(line, 3.4 * sc + 1, function (t) { return 1 - t; }, rand, 2 * sc);
+      var b = boxOf(sp.line, 4);
+      b[3] = y + h - 1 - b[1];
+      feats.push({ el: el("polygon", { points: sp.points, "class": "crack" }, tex), box: b });
+    });
+    return { g: g, feats: feats };
+  }
+
+  var s2 = el("g", { opacity: 0 });
+  var q2 = surface(8, 15, 130, 180, DECOR, s2);
+  var dets = q2.feats.map(function (f) {
+    var b = f.box;
+    return el("rect", { x: b[0], y: b[1], width: b[2], height: b[3], rx: 2, "class": "det", opacity: 0 }, s2);
+  });
+  var scan = el("line", { x1: 8, x2: 138, "class": "scan", opacity: 0 }, s2);
+  var pick = q2.feats[PICK].box, pickX = pick[0] + pick[2] / 2, pickY = pick[1] + pick[3] / 2;
+  var ripple = el("circle", { cx: pickX, cy: pickY, r: 4, "class": "rip", opacity: 0 }, s2);
+  var arrow2 = arrow(s2);
+  var results2 = DECORS.map(function (S, i) {
+    var c = cell(i), r = surface(c[0], c[1], 70, 92, S, s2), f = r.feats[0];
+    return { g: r.g, box: f.box, hl: hlRect(f.box, s2) };
+  });
+
+
+  /* ---------- scene 3: material classification ---------- */
+  // contour lines of a scalar field (marching squares); bucket(level) picks which path string a line goes into
+  function contours(x, y, w, h, st, field, bucket, n) {
+    var nx = Math.ceil(w / st), ny = Math.ceil(h / st), F = [], out = [], i, j;
+    for (i = 0; i < n; i++) out.push("");
+    for (j = 0; j <= ny; j++) { F.push([]); for (i = 0; i <= nx; i++) F[j].push(field(x + i * st, y + j * st)); }
+    for (j = 0; j < ny; j++) for (i = 0; i < nx; i++) {
+      var c4 = [F[j][i], F[j][i + 1], F[j + 1][i + 1], F[j + 1][i]];
+      var xy = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]];
+      var lo = Math.min.apply(0, c4), hi = Math.max.apply(0, c4);
+      for (var lv = Math.ceil(lo); lv <= hi; lv++) {
+        var b = bucket(lv);
+        if (b < 0) continue;
+        var pts = [];
+        for (var e = 0; e < 4; e++) {
+          var va = c4[e], vb = c4[(e + 1) % 4];
+          if ((va - lv) * (vb - lv) < 0) {
+            var t = (lv - va) / (vb - va), A = xy[e], B = xy[(e + 1) % 4];
+            pts.push(f1(x + lerp(A[0], B[0], t) * st) + " " + f1(y + lerp(A[1], B[1], t) * st));
+          }
+        }
+        for (var q = 0; q + 1 < pts.length; q += 2) out[b] += "M" + pts[q] + "L" + pts[q + 1];
+      }
+    }
+    return out;
+  }
+  // rounded, clipped tile with a slightly varying base colour
+  function tile(x, y, w, h, c1, c2, rand, parent, dir) {
+    var g = el("g", {}, parent), id = "demo-mat-" + clips++;
+    var tone = el("linearGradient", { id: id + "-tone", x1: 0, y1: 0, x2: 1, y2: dir ? 1 : .15 }, defs);
+    for (var s = 0; s <= 5; s++) el("stop", { offset: s / 5, "stop-color": mix(c1, c2, rand()) }, tone);
+    el("rect", { x: x, y: y, width: w, height: h, rx: 3 }, el("clipPath", { id: id }, defs));
+    el("rect", { x: x, y: y, width: w, height: h, rx: 3, fill: "url(#" + id + "-tone)", "class": "mat" }, g);
+    return { g: g, tex: el("g", { "clip-path": "url(#" + id + ")" }, g) };
+  }
+  function dots(n, x, y, w, h, rand) {
+    var d = "";
+    for (var i = 0; i < n; i++) d += "M" + f1(x + rand() * w) + " " + f1(y + rand() * h) + "h.01";
+    return d;
+  }
+
+  // soft lighter patches, so a surface doesn't look flat
+  function clouds(parent, x, y, w, h, rand, n) {
+    for (var i = 0; i < n; i++) {
+      el("ellipse", { cx: x + rand() * w, cy: y + rand() * h, rx: w * (.2 + rand() * .3), ry: h * (.1 + rand() * .2), fill: "url(#demo-cloud)" }, parent);
+    }
+  }
+  var cloud = el("radialGradient", { id: "demo-cloud" }, defs);
+  el("stop", { offset: 0, "stop-color": "#fff", "stop-opacity": .07 }, cloud);
+  el("stop", { offset: 1, "stop-color": "#fff", "stop-opacity": 0 }, cloud);
+
+  function marble(x, y, w, h, seed, parent) {
+    // dark marble: soft clouds, a few long light veins running diagonally, finer veins crossing them
+    var rand = rng(seed), t = tile(x, y, w, h, "#222221", "#2F2E2C", rand, parent), sc = Math.max(w / 130, .7);
+    clouds(t.tex, x, y, w, h, rand, 7);
+    function turb(u, v, p, f) {
+      return Math.sin(u * 5 * f + v * 2 + p[0]) * .5 + Math.sin(u * 11 * f - v * 7 + p[1]) * .25 + Math.sin(u * 23 * f + v * 19 + p[2]) * .12 + Math.sin(u * 47 - v * 41 * f + p[3]) * .06;
+    }
+    var pa = [rand() * 6.3, rand() * 6.3, rand() * 6.3, rand() * 6.3], pb = [rand() * 6.3, rand() * 6.3, rand() * 6.3, rand() * 6.3];
+    var main = contours(x, y, w, h, 1.2 * sc, function (u, v) {
+      u = (u - x) / w; v = (v - y) / h;
+      return (u * .9 + v) * 2.3 + turb(u, v, pa, 1) * .55;
+    }, function () { return 0; }, 1);
+    var fine = contours(x, y, w, h, 1.2 * sc, function (u, v) {
+      u = (u - x) / w; v = (v - y) / h;
+      return (u - v * .45) * 4.5 + turb(u, v, pb, 1.6) * 1.1;
+    }, function () { return 0; }, 1);
+    el("path", { d: fine[0], "class": "vein2", "stroke-width": .45 * sc }, t.tex);
+    el("path", { d: main[0], "class": "vein", "stroke-width": .9 * sc }, t.tex);
+    el("path", { d: dots(Math.round(w * h / 90), x, y, w, h, rand), "class": "speck", "stroke-width": .8 * sc }, t.tex);
+    return t;
+  }
+  function leather(x, y, w, h, seed, parent) {
+    var rand = rng(seed), t = tile(x, y, w, h, "#211A16", "#2B221D", rand, parent), sc = Math.max(w / 130, .7);
+    var gs = 5.2 * sc, d = "";
+    for (var v = y - gs / 2; v < y + h + gs; v += gs * .86) for (var u = x - gs / 2; u < x + w + gs; u += gs) {
+      var cx = u + (rand() - .5) * gs * .5 + (Math.round((v - y) / gs) % 2) * gs / 2, cy = v + (rand() - .5) * gs * .4;
+      var rx = gs * (.32 + rand() * .12), ry = gs * (.28 + rand() * .12);
+      d += "M" + f1(cx - rx) + " " + f1(cy) + "a" + f1(rx) + " " + f1(ry) + " 0 1 0 " + f1(2 * rx) + " 0a" + f1(rx) + " " + f1(ry) + " 0 1 0 " + f1(-2 * rx) + " 0";
+    }
+    el("path", { d: d, "class": "pebble" }, t.tex);
+    clouds(t.tex, x, y, w, h, rand, 4);
+    return t;
+  }
+  function metal(x, y, w, h, seed, parent) {
+    var rand = rng(seed), t = tile(x, y, w, h, "#3A4146", "#5D666D", rand, parent, true), sc = Math.max(w / 130, .7);
+    var light = "", dark = "";
+    for (var i = 0; i < h * 1.2; i++) {
+      var v = f1(y + rand() * h), u0 = x + rand() * w * .6 - w * .1, len = w * (.3 + rand() * .8);
+      var s = "M" + f1(u0) + " " + v + "h" + f1(len);
+      if (rand() < .5) light += s; else dark += s;
+    }
+    el("path", { d: light, "class": "brush", "stroke-width": .45 * sc }, t.tex);
+    el("path", { d: dark, "class": "brush2", "stroke-width": .45 * sc }, t.tex);
+    el("rect", { x: x, y: y, width: w, height: h, fill: "url(#demo-sheen)" }, t.tex);
+    return t;
+  }
+  function textile(x, y, w, h, seed, parent) {
+    var rand = rng(seed), t = tile(x, y, w, h, "#20242B", "#282D35", rand, parent), sc = Math.max(w / 130, .7);
+    var c = 4.4 * sc, a = "", b = "", i = 0;
+    for (var v = y; v < y + h; v += c, i++) for (var u = x, j = 0; u < x + w; u += c, j++) {
+      var s, th = c * .36;
+      if ((i + j) % 2) s = "M" + f1(u + c * .05) + " " + f1(v + c * .1) + "h" + f1(c * .9) + "v" + f1(th) + "h" + f1(-c * .9) + "Z" + "M" + f1(u + c * .05) + " " + f1(v + c * .54) + "h" + f1(c * .9) + "v" + f1(th) + "h" + f1(-c * .9) + "Z";
+      else s = "M" + f1(u + c * .1) + " " + f1(v + c * .05) + "v" + f1(c * .9) + "h" + f1(th) + "v" + f1(-c * .9) + "Z" + "M" + f1(u + c * .54) + " " + f1(v + c * .05) + "v" + f1(c * .9) + "h" + f1(th) + "v" + f1(-c * .9) + "Z";
+      if (rand() < .55) a += s; else b += s;
+    }
+    el("path", { d: a, "class": "thread" }, t.tex);
+    el("path", { d: b, "class": "thread2" }, t.tex);
+    return t;
+  }
+
+  var sheen = el("linearGradient", { id: "demo-sheen", x1: 0, y1: 0, x2: 1, y2: 1 }, defs);
+  [[0, 0], [.42, 0], [.5, .16], [.58, 0], [1, 0]].forEach(function (s) { el("stop", { offset: s[0], "stop-color": "#fff", "stop-opacity": s[1] }, sheen); });
+
+  var TYPES = { en: ["Wood", "Stone", "Leather", "Metal", "Textile"], de: ["Holz", "Stein", "Leder", "Metall", "Textil"] };
+  var GUESS = [.35, .55, .28, .32, .16], CONF = [.04, .94, .03, .05, .02]; // bars wobble, then settle on stone
+  var s3 = el("g", { opacity: 0 });
+  var big = marble(8, 15, 130, 180, 12, s3);
+  var scan3 = el("line", { "class": "scan", opacity: 0 }, s3);
+  var list = el("g", {}, s3);
+  var rows = TYPES.en.map(function (name, i) {
+    var yy = 34 + i * 34, row = el("g", { "class": "cls" }, list);
+    var label = el("text", { x: 172, y: yy + 4, "font-size": 12 }, row);
+    el("rect", { x: 250, y: yy - 3, width: 220, height: 6, rx: 3, "class": "track" }, row);
+    return { g: row, label: label, bar: el("rect", { x: 250, y: yy - 3, width: 0, height: 6, rx: 3, "class": "bar" }, row) };
+  });
+  // the batch: stone is already there, four other materials follow; each ends up in a 92 x 128 slot with a label
+  var MAKERS = [null, function (x, y, w, h, seed, p) { return surface(x, y, w, h, { seed: seed }, p); }, leather, metal, textile];
+  var KIND = [1, 0, 2, 3, 4];
+  var slots = KIND.map(function (k, i) {
+    var x = 8 + i * 101, t = i ? MAKERS[i](x, 15, 92, 128, 31 + i * 7, s3) : big;
+    var chip = el("g", { "class": "chip", opacity: 0 }, s3);
+    return { x: x, t: t, k: k, chip: chip, box: el("rect", { y: 151, height: 17, rx: 3 }, chip), text: el("text", { y: 162.5, "font-size": 9, "text-anchor": "middle" }, chip) };
+  });
+  var lang3 = null;
+  function label3() {
+    var lang = document.documentElement.lang === "de" ? "de" : "en";
+    if (lang === lang3) return;
+    lang3 = lang;
+    rows.forEach(function (r, i) { r.label.textContent = TYPES[lang][i]; });
+    slots.forEach(function (s) {
+      var name = TYPES[lang][s.k], cw = name.length * 5.6 + 16;
+      s.text.textContent = name.toUpperCase();
+      s.text.setAttribute("x", s.x + 46);
+      s.box.setAttribute("x", s.x + 46 - cw / 2); s.box.setAttribute("width", cw);
+    });
+  }
+
+  /* ---------- scene 4: pixel-exact search ---------- */
+  // small print marks: recycling triangle, registration cross, a small logo, a single pixel
+  function mark(type, cx, cy, parent, accent) {
+    var c = accent ? "dmk" : "mk";
+    if (type === "reg") {
+      el("circle", { cx: cx, cy: cy, r: 2.6, "class": c }, parent);
+      el("path", { d: "M" + (cx - 4.5) + " " + cy + "h9M" + cx + " " + (cy - 4.5) + "v9", "class": c }, parent);
+    } else if (type === "rec") {
+      el("path", { d: "M" + cx + " " + (cy - 4) + "L" + (cx + 4.5) + " " + (cy + 3.5) + "L" + (cx - 4.5) + " " + (cy + 3.5) + "Z", "class": c }, parent);
+    } else if (type === "logo") {
+      var d = "";
+      for (var i = 0; i < 10; i++) {
+        var a = i * Math.PI / 5 - Math.PI / 2, r = i % 2 ? 1.6 : 4;
+        d += (i ? "L" : "M") + f1(cx + Math.cos(a) * r) + " " + f1(cy + Math.sin(a) * r);
+      }
+      el("path", { d: d + "Z", "class": c + "f" }, parent);
+    } else {
+      el("rect", { x: cx - .6, y: cy - .6, width: 1.2, height: 1.2, "class": c + "f" }, parent);
+    }
+  }
+  var BASE4 = { band: [.05, .06], ln: [[.1, .2, .45], [.1, .27, .3]], blk: [.1, .38, .8, .38], bc: [.1, .84], em: [.74, .22, .3] };
+  var QMARKS = [["rec", .5, .88], ["reg", .86, .88]];
+  var MMARKS = [["rec", .5, .88], ["logo", .22, .46], ["dot", .64, .6]];
+  // what differs between the query and its match: [mark, x, y, label]
+  var DIFFS = [["reg", .86, .88, "−"], ["logo", .22, .46, "+"], ["dot", .64, .6, "1 px"]];
+  function pack4(x, y, marks, parent) {
+    var r = pack(x, y, 130, 180, BASE4, parent);
+    marks.forEach(function (m) { mark(m[0], x + m[1] * 130, y + m[2] * 180, r.g); });
+    return r;
+  }
+
+  var s4 = el("g", { opacity: 0 });
+  var q4 = pack4(8, 15, QMARKS, s4);
+  // the database: a grid of tiny designs that drop out in waves until one match is left
+  var grid = el("g", {}, s4), rand4 = rng(99), WIN = 30, SURVIVORS = [9, 22, 47, 58], tiles = [];
+  for (var ti = 0; ti < 72; ti++) {
+    var tx = 200 + (ti % 12) * 25.4, ty = 13 + Math.floor(ti / 12) * 30.5, tile4 = { x: tx, y: ty };
+    if (ti !== WIN) {
+      var tg = tile4.g = el("g", {}, grid);
+      el("rect", { x: tx, y: ty, width: 21, height: 29, rx: 1.5, "class": "body" }, tg);
+      if (rand4() < .5) el("rect", { x: tx + 2, y: ty + 2, width: 17, height: 2, "class": "band" }, tg);
+      el("rect", { x: tx + 2 + rand4() * 3, y: ty + 7 + rand4() * 9, width: 13 + rand4() * 3, height: 6 + rand4() * 5, "class": "blk" }, tg);
+      el("rect", { x: tx + 3, y: ty + 21 + rand4() * 3, width: 6 + rand4() * 9, height: 1.4, "class": "ln" }, tg);
+      el("circle", { cx: tx + 5 + rand4() * 11, cy: ty + 5 + rand4() * 3, r: 2 + rand4(), "class": "mini-em" }, tg);
+      var si = SURVIVORS.indexOf(ti);
+      tile4.out = si < 0 ? 1300 + rand4() * 1700 : 3300 + si * 60;
+    }
+    tiles.push(tile4);
+  }
+  var probe = el("rect", { width: 23, height: 31, rx: 2, "class": "probe", opacity: 0 }, s4);
+  var cands = SURVIVORS.map(function (i) {
+    return el("rect", { x: tiles[i].x - 1.5, y: tiles[i].y - 1.5, width: 24, height: 32, rx: 2, "class": "cand", opacity: 0 }, s4);
+  });
+  var winBox = el("rect", { x: tiles[WIN].x - 1.5, y: tiles[WIN].y - 1.5, width: 24, height: 32, rx: 2, "class": "hl", opacity: 0 }, s4);
+  // the match is drawn full size where it ends up, and scaled down into its grid cell at first
+  var m4 = pack4(374, 15, MMARKS, s4);
+  // the differences, drawn where the two designs end up stacked
+  var X4 = 191, diffs = DIFFS.map(function (d) {
+    var g = el("g", { opacity: 0 }, s4), cx = X4 + d[1] * 130, cy = 15 + d[2] * 180, hb = d[0] === "dot" ? 4.5 : 7.5;
+    mark(d[0], cx, cy, g, true);
+    el("rect", { x: cx - hb, y: cy - hb, width: 2 * hb, height: 2 * hb, rx: 2, "class": "hl", "vector-effect": "non-scaling-stroke" }, g);
+    el("text", { x: cx, y: cy - hb - 3, "font-size": 9, "text-anchor": "middle", "class": "dlab" }, g).textContent = d[3];
+    return { g: g, box: [cx - hb, cy - hb, 2 * hb, 2 * hb] };
+  });
+  var cur = el("path", { "class": "cur", d: "M0 0V13.5L3.4 10.4L5.7 15.6L8 14.6L5.8 9.5H10.4Z", opacity: 0 });
+  function cursor(x, y, k, o) {
+    cur.setAttribute("transform", "translate(" + x + " " + y + ") scale(" + k + ")");
+    cur.setAttribute("opacity", o);
+  }
+
+  /* ---------- timeline ---------- */
+  var scene = -1;
+
+  function render1(t) {
+    var out = 1 - p(t, 8000, 8700), s = q1.box, k1 = p(t, 400, 1300), k2 = p(t, 1500, 2300);
+    s1.setAttribute("opacity", p(t, 0, 300) * (1 - p(t, 8700, 9100)));
+    // cursor glides to the motif, then drags a selection box over it
+    cursor(lerp(lerp(190, s[0], k1), s[0] + s[2], k2), lerp(lerp(200, s[1], k1), s[1] + s[3], k2), 1, p(t, 200, 500) * (1 - p(t, 2600, 2900)));
+    sel.setAttribute("x", s[0]); sel.setAttribute("y", s[1]);
+    sel.setAttribute("width", Math.max(.01, s[2] * k2)); sel.setAttribute("height", Math.max(.01, s[3] * k2));
+    sel.setAttribute("opacity", t >= 1500 ? out : 0);
+    var locked = t >= 2300 && t < 8350;
+    sel.setAttribute("class", locked ? "sel lock" : "sel");
+    q1.em.setAttribute("class", locked ? "em on" : "em");
+    arrow1.g.setAttribute("opacity", out);
+    arrow1.draw(p(t, 2500, 3000));
+    showResults(results1, t, 2900, 3600, out);
+  }
+
+  function render2(t) {
+    var out = 1 - p(t, 8600, 9200);
+    s2.setAttribute("opacity", p(t, 0, 400) * (1 - p(t, 9200, 9700)));
+    // a scan line sweeps the decor; each feature gets a box as the line passes it
+    var sy = 15 + 180 * Math.min(1, Math.max(0, (t - 600) / 1600));
+    scan.setAttribute("y1", sy); scan.setAttribute("y2", sy);
+    scan.setAttribute("opacity", t > 600 ? 1 - p(t, 2200, 2500) : 0);
+    var picked = t >= 3650 && t < 8900;
+    dets.forEach(function (d, i) {
+      var b = q2.feats[i].box, at = 600 + 1600 * (b[1] + b[3] / 2 - 15) / 180;
+      var dim = i === PICK ? 1 : 1 - .75 * p(t, 3700, 4000);
+      d.setAttribute("opacity", p(t, at, at + 250) * dim * out);
+      d.setAttribute("class", i === PICK && picked ? "hl" : "det");
+    });
+    // cursor moves to a knot and clicks it
+    var k = p(t, 2600, 3500), press = 1 - .15 * (p(t, 3500, 3600) - p(t, 3600, 3750));
+    cursor(lerp(190, pickX, k), lerp(200, pickY, k), press, p(t, 2400, 2700) * (1 - p(t, 4000, 4300)));
+    var kr = p(t, 3600, 4000);
+    ripple.setAttribute("r", 4 + 14 * kr);
+    ripple.setAttribute("opacity", t >= 3600 && t < 4000 ? 1 - kr : 0);
+    arrow2.g.setAttribute("opacity", out);
+    arrow2.draw(p(t, 4100, 4600));
+    showResults(results2, t, 4500, 5200, out);
+  }
+
+  function render3(t) {
+    label3();
+    s3.setAttribute("opacity", p(t, 0, 300) * (1 - p(t, 9600, 10200)));
+    cursor(0, 0, 1, 0);
+    // a stone decor is uploaded, then later shrinks into the first slot of the batch
+    var a = p(t, 0, 600), k = lerp(1, 92 / 130, p(t, 3600, 4300));
+    big.g.setAttribute("opacity", a);
+    big.g.setAttribute("transform", "translate(0 " + -18 * (1 - a) + ") translate(8 15) scale(" + k + ") translate(-8 -15)");
+    // while it is scanned the confidence bars wobble, then settle on stone
+    list.setAttribute("opacity", p(t, 500, 900) * (1 - p(t, 3300, 3700)));
+    var k1 = p(t, 1000, 1800), k2 = p(t, 1800, 2600), done = t >= 2600;
+    rows.forEach(function (r, i) {
+      var v = lerp(GUESS[i] * k1, CONF[i], k2) + .05 * Math.sin(t / 90 + i * 2) * k1 * (1 - k2);
+      r.bar.setAttribute("width", 220 * Math.max(0, v));
+      r.g.setAttribute("class", done ? (i === 1 ? "cls on" : "cls dim") : "cls");
+    });
+    var scanX = 8, scanW = 130, scanY = 15 + 180 * Math.min(1, Math.max(0, (t - 900) / 1500)), scanO = t > 900 ? 1 - p(t, 2300, 2500) : 0;
+    slots[0].chip.setAttribute("opacity", p(t, 4300, 4600));
+    // four more decors of other materials drop in, each gets a quick scan and its label
+    slots.forEach(function (s, i) {
+      if (!i) return;
+      var st = 4600 + (i - 1) * 900, d = p(t, st, st + 350);
+      s.t.g.setAttribute("opacity", d);
+      s.t.g.setAttribute("transform", "translate(0 " + -18 * (1 - d) + ")");
+      if (t > st + 350 && t < st + 950) {
+        scanX = s.x; scanW = 92;
+        scanY = 15 + 128 * Math.min(1, (t - st - 350) / 450);
+        scanO = 1 - p(t, st + 800, st + 950);
+      }
+      s.chip.setAttribute("opacity", p(t, st + 800, st + 1000));
+    });
+    scan3.setAttribute("x1", scanX); scan3.setAttribute("x2", scanX + scanW);
+    scan3.setAttribute("y1", scanY); scan3.setAttribute("y2", scanY);
+    scan3.setAttribute("opacity", scanO);
+  }
+
+  function render4(t) {
+    s4.setAttribute("opacity", p(t, 0, 300) * (1 - p(t, 9100, 9600)));
+    cursor(0, 0, 1, 0);
+    var stack = p(t, 4800, 5600), dim = 1 - .62 * p(t, 5900, 6300);
+    // the query drops in, later slides to the middle
+    var a = p(t, 0, 600);
+    q4.g.setAttribute("opacity", a * dim);
+    q4.g.setAttribute("transform", "translate(" + (X4 - 8) * stack + " " + -18 * (1 - a) + ")");
+    // it is compared against the whole grid: a probe jumps around, designs drop out in waves
+    grid.setAttribute("opacity", p(t, 600, 1000) * (1 - p(t, 3700, 4100)));
+    tiles.forEach(function (c) { if (c.g) c.g.setAttribute("opacity", 1 - .85 * p(t, c.out, c.out + 250)); });
+    var hop = tiles[(Math.floor(t / 70) * 37) % 72];
+    probe.setAttribute("x", hop.x - 1); probe.setAttribute("y", hop.y - 1);
+    probe.setAttribute("opacity", t > 1000 && t < 3000 ? 1 : 0);
+    cands.forEach(function (c) { c.setAttribute("opacity", p(t, 3000, 3200) * (1 - p(t, 3300, 3500))); });
+    winBox.setAttribute("opacity", p(t, 3000, 3200) * (1 - p(t, 3700, 3850)));
+    // the best match grows out of its cell, then slides onto the query
+    var c = tiles[WIN], k = p(t, 3800, 4600), s = lerp(21 / 130, 1, k);
+    var x = lerp(c.x, 374, k) + (X4 - 374) * stack, y = lerp(c.y, 15, k);
+    m4.g.setAttribute("opacity", p(t, 600, 1000) * (1 - .45 * stack) * dim);
+    m4.g.setAttribute("transform", "translate(" + x + " " + y + ") scale(" + s + ") translate(-374 -15)");
+    // stacked: everything that is the same fades back, what differs lights up
+    diffs.forEach(function (d, i) {
+      var b = p(t, 6100 + i * 300, 6450 + i * 300);
+      d.g.setAttribute("opacity", b);
+      scaleAbout(d.g, 1.6 - .6 * b, d.box);
+    });
+  }
+
+  // scenes play one after another: [render, duration, group, a moment that shows the result]
+  var SCENES = [[render1, 9200, s1, 7000], [render2, 9800, s2, 7500], [render3, 10500, s3, 9000], [render4, 9800, s4, 8000]], T = 0;
+  SCENES.forEach(function (s) { s.start = T; T += s[1]; });
+  var dots = fig.querySelectorAll(".dots button");
+  function render(t) {
+    var i = 0;
+    while (i < SCENES.length - 1 && t >= SCENES[i][1]) { t -= SCENES[i][1]; i++; }
+    if (i !== scene) {
+      scene = i;
+      SCENES.forEach(function (s, j) {
+        if (j !== i) s[2].setAttribute("opacity", 0);
+        caps[j].style.opacity = j === i ? 1 : 0;
+        dots[j].setAttribute("aria-current", String(j === i));
+      });
+    }
+    SCENES[i][0](t);
+  }
+
+  // reduced motion: show each scene's result as a still; the dots switch between them
+  var still = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var t0 = null, acc = 0, raf = 0, running = false;
+  dots.forEach(function (b, i) {
+    b.addEventListener("click", function () {
+      acc = SCENES[i].start + (still ? SCENES[i][3] : 0);
+      t0 = null;
+      render(acc);
+    });
+  });
+  if (still) { render(SCENES[0][3]); return; }
+
+  function tick(now) {
+    if (t0 === null) t0 = now - acc;
+    acc = now - t0;
+    render(acc % T);
+    raf = requestAnimationFrame(tick);
+  }
+  function play() { if (running) return; running = true; t0 = null; raf = requestAnimationFrame(tick); }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+
+  render(0);
+  if ("IntersectionObserver" in window) {
+    new IntersectionObserver(function (es) { es[0].isIntersecting ? play() : stop(); }).observe(svg);
+  } else play();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Impressum — Dmytro Zahoruiko</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --table: #DEE3E5;
+    --sheet: #FCFCFB;
+    --ink: #191E23;
+    --ink-soft: #5C666D;
+    --rule: #C3CACD;
+    --cyan: #0A6A8C;
+    --magenta: #A32A69;
+
+    --body: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --table: #13171A;
+      --sheet: #1B2025;
+      --ink: #E6E9E8;
+      --ink-soft: #97A1A8;
+      --rule: #333B41;
+      --cyan: #5CBBD9;
+      --magenta: #E489B4;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--table);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  a { color: var(--cyan); }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+  .topbar { padding: 18px 0 0; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; }
+  .topbar a { color: var(--ink-soft); text-decoration: none; }
+  .topbar a:hover { color: var(--ink); text-decoration: underline; }
+
+  .sheet { margin-top: 28px; background: var(--sheet); border: 1px solid var(--rule); padding: 32px 36px 36px; }
+  h1 { font-size: clamp(28px, 4vw, 36px); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin: 0 0 28px; }
+  h2 { font-family: var(--mono); font-weight: 400; font-size: 11.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-soft); margin: 28px 0 8px; }
+  p { margin: 0; }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 40px 0 0; }
+
+  @media (max-width: 620px) {
+    body { padding: 0 16px 64px; }
+    .sheet { padding: 24px 20px 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="topbar"><a href="index.html">&larr; Dmytro Zahoruiko</a></nav>
+
+  <main class="sheet">
+    <h1>Impressum</h1>
+
+    <h2>Angaben gemäß § 5 DDG</h2>
+    <p>
+      Dmytro Zahoruiko<br>
+      Düsseldorf, Deutschland
+    </p>
+
+    <h2>Kontakt</h2>
+    <p>
+      E-Mail: <a href="mailto:zahoruikodmytro1995@gmail.com">zahoruikodmytro1995@gmail.com</a><br>
+      Telefon: <a href="tel:+491784919857">+49 178 491 9857</a>
+    </p>
+
+    <section lang="en">
+      <hr>
+      <h1 style="margin-top: 32px">Legal notice</h1>
+      <p>Information pursuant to § 5 of the German Digital Services Act (DDG): see the name and contact details above.</p>
+    </section>
+  </main>
+</div>
+</body>
+</html>

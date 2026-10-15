@@ -1,0 +1,1232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rebuilding Matches</title>
+<meta name="description" content="Case study: taking an AI image-search platform from prototype to a secure multi-customer product.">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --table: #DEE3E5;
+    --sheet: #FCFCFB;
+    --sheet-2: #F2F4F5;
+    --ink: #191E23;
+    --ink-soft: #5C666D;
+    --rule: #C3CACD;
+    --rule-soft: #DDE2E4;
+    --cyan: #0A6A8C;
+    --magenta: #A32A69;
+    --ochre: #90650A;
+    --green: #1D7550;
+    --t-cyan: #DBEAF1;
+    --t-magenta: #F4E2EC;
+    --t-ochre: #F2E9D4;
+    --t-green: #DCEEE4;
+    --shadow: 0 1px 0 rgba(25,30,35,.06), 0 12px 28px -20px rgba(25,30,35,.45);
+
+    --display: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+    --mono-svg: ui-monospace, "SF Mono", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --table: #13171A;
+      --sheet: #1B2025;
+      --sheet-2: #21272C;
+      --ink: #E6E9E8;
+      --ink-soft: #97A1A8;
+      --rule: #333B41;
+      --rule-soft: #272E33;
+      --cyan: #5CBBD9;
+      --magenta: #E489B4;
+      --ochre: #D9B255;
+      --green: #63C193;
+      --t-cyan: #123340;
+      --t-magenta: #391F2D;
+      --t-ochre: #332A16;
+      --t-green: #153027;
+      --shadow: 0 1px 0 rgba(0,0,0,.4), 0 14px 30px -22px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"] {
+    --table: #13171A;
+    --sheet: #1B2025;
+    --sheet-2: #21272C;
+    --ink: #E6E9E8;
+    --ink-soft: #97A1A8;
+    --rule: #333B41;
+    --rule-soft: #272E33;
+    --cyan: #5CBBD9;
+    --magenta: #E489B4;
+    --ochre: #D9B255;
+    --green: #63C193;
+    --t-cyan: #123340;
+    --t-magenta: #391F2D;
+    --t-ochre: #332A16;
+    --t-green: #153027;
+    --shadow: 0 1px 0 rgba(0,0,0,.4), 0 14px 30px -22px rgba(0,0,0,.9);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--table);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 0 20px 96px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .col { max-width: 68ch; }
+
+  a { color: var(--cyan); }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+
+  /* ---------- top bar ---------- */
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 18px 0 0; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; }
+  .topbar .back { color: var(--ink); text-decoration: none; padding: 5px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--sheet); }
+  .topbar .back:hover { background: var(--sheet-2); border-color: var(--ink-soft); }
+  .topbar .lang { display: flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--sheet); }
+  .topbar .lang a { padding: 5px 12px; text-decoration: none; color: var(--ink); }
+  .topbar .lang a[aria-current] { background: var(--ink); color: var(--sheet); }
+
+  /* ---------- masthead ---------- */
+
+  .masthead {
+    padding: 28px 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    font-size: clamp(42px, 7vw, 74px);
+    line-height: .98;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: clamp(19px, 2.2vw, 22px);
+    line-height: 1.5;
+    max-width: 60ch;
+    margin: 0;
+    color: var(--ink);
+  }
+  .lede b { font-weight: 600; }
+
+  .inkbar { display: flex; height: 7px; width: 190px; }
+  .inkbar span { flex: 1; }
+
+  /* ---------- counters ---------- */
+
+  .counters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin: 12px 0 0;
+  }
+  .counter { background: var(--sheet); padding: 16px 18px 18px; }
+  .counter dt {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 8px;
+  }
+  .counter dd {
+    margin: 0;
+    font-family: var(--display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-size: 25px;
+    font-variant-numeric: tabular-nums;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0 8px;
+  }
+  .counter .was { color: var(--ink-soft); font-weight: 400; font-size: 19px; }
+  .counter .arw { color: var(--ink-soft); font-weight: 400; font-size: 15px; }
+  @media (min-width: 700px) and (max-width: 1099px) {
+    .counters { grid-template-columns: repeat(3, 1fr); }
+    .counter dd { flex-wrap: nowrap; white-space: nowrap; }
+  }
+  @media (min-width: 1100px) {
+    .counters { grid-template-columns: repeat(6, auto); }
+    .counter dd { flex-wrap: nowrap; white-space: nowrap; }
+  }
+
+  /* ---------- sections ---------- */
+
+  section { padding: 56px 0 0; }
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    font-size: clamp(27px, 3.4vw, 37px);
+    line-height: 1.08;
+    margin: 10px 0 18px;
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  p { margin: 0 0 16px; }
+  .sec-rule { border: 0; border-top: 2px solid var(--ink); margin: 0; }
+
+  .note {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- figures ---------- */
+
+  figure { margin: 30px 0 34px; }
+  .scroller {
+    overflow-x: auto;
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    padding: 22px 22px 8px;
+  }
+  .scroller svg { display: block; min-width: 700px; max-width: 100%; height: auto; }
+  figcaption {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin-top: 12px;
+    max-width: 80ch;
+  }
+  .svg-box { fill: var(--sheet-2); stroke: var(--rule); stroke-width: 1; }
+  .svg-lbl { font-family: var(--mono-svg); font-size: 12px; fill: var(--ink); }
+  .svg-sub { font-family: var(--mono-svg); font-size: 10.5px; fill: var(--ink-soft); }
+  .svg-row { font-family: var(--mono-svg); font-size: 10.5px; letter-spacing: .1em; fill: var(--ink-soft); }
+  .svg-ttl { font-family: var(--display); font-size: 15px; font-weight: 700; fill: var(--ink); }
+  .svg-line { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+  .svg-dash { stroke: var(--rule); stroke-width: 1.4; fill: none; stroke-dasharray: 5 4; }
+  .svg-edge { font-family: var(--mono-svg); font-size: 10px; fill: var(--ink-soft); }
+
+  /* ---------- layer blocks ---------- */
+
+  .layers { display: flex; flex-direction: column; gap: 22px; }
+  .layer {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+  .layer-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--rule);
+  }
+  .layer-head .dot { width: 12px; height: 12px; flex: 0 0 auto; }
+  .layer-head h3 {
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    font-family: var(--mono);
+    font-weight: 400;
+  }
+  .layer-head .cnt { margin-left: auto; font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); }
+  .mods { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 1px; background: var(--rule-soft); }
+  .mod { background: var(--sheet); padding: 16px 20px 18px; }
+  .mod-name { font-family: var(--display); font-weight: 700; font-size: 15.5px; margin: 0 0 5px; }
+  .mod p { font-size: 14.5px; line-height: 1.5; margin: 0; color: var(--ink-soft); }
+  .mod p b { color: var(--ink); font-weight: 400; }
+
+  /* ---------- decision panel ---------- */
+
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    margin: 26px 0;
+  }
+  .compare > div { background: var(--sheet); padding: 20px 22px 24px; }
+  .compare h3 { font-family: var(--mono); font-weight: 400; font-size: 11.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; }
+  .compare ul { margin: 0; padding-left: 18px; }
+  .compare li { font-size: 15px; line-height: 1.5; margin-bottom: 9px; }
+  .compare li:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 64px;
+    border-top: 1px solid var(--rule);
+    padding-top: 18px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+  }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+  }
+
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    .scroller, .layer, .compare, .counters { box-shadow: none; }
+    section, figure, .layer { break-inside: avoid; }
+  }
+
+  /* ---------- before / after ---------- */
+  .compare .after h3 { color: var(--green); }
+  .compare .after li::marker { color: var(--green); }
+  .compare li { font-size: 16px; }
+
+  /* ---------- highlight cards ---------- */
+  .wins { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(310px, 100%), 1fr)); gap: 18px; margin-top: 26px; }
+  .win {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--accent, var(--ink));
+    box-shadow: var(--shadow);
+    padding: 20px 22px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .win .num { font-family: var(--mono); font-size: 12px; color: var(--accent, var(--ink-soft)); letter-spacing: .08em; }
+  .win h3 { font-size: 21px; line-height: 1.2; margin: 0; text-wrap: balance; }
+  .win p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--ink-soft); }
+  .win p b { color: var(--ink); font-weight: 600; }
+  .tags { list-style: none; margin: auto 0 0; padding: 6px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border: 1px solid var(--rule); border-radius: 3px; background: var(--sheet-2); color: var(--ink-soft); }
+
+  /* ---------- stack ---------- */
+  .stack { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .stack li { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; font-size: 14px; font-weight: 500; }
+  .stack i { display: inline-flex; width: 20px; height: 20px; padding: 2px; background: #fff; border-radius: 3px; }
+  .stack img { width: 100%; height: 100%; }
+
+
+  /* ---------- call to action ---------- */
+  .cta { margin-top: 64px; padding: 28px; background: var(--ink); color: var(--sheet); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 28px; }
+  .cta p { margin: 0; font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; max-width: 32ch; }
+  .cta a { background: var(--sheet); color: var(--ink); text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 4px; white-space: nowrap; }
+  .cta a:hover { background: var(--sheet-2); }
+  .home { display: flex; justify-content: center; margin-top: 28px; }
+  .home a { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border: 1px solid var(--ink); border-radius: 4px; color: var(--ink); background: var(--sheet); text-decoration: none; font-weight: 600; }
+  .home a:hover { background: var(--ink); color: var(--sheet); }
+  .win .jump { font-size: 14px; font-weight: 600; color: var(--accent, var(--cyan)); text-decoration: none; }
+  .win .jump:hover { text-decoration: underline; }
+
+  /* ---------- counters wrap to fill each row ---------- */
+  .counters { display: flex; flex-wrap: wrap; }
+  .counter { flex: 1 1 22%; }
+  .counter dd { flex-wrap: wrap; white-space: normal; }
+  @media (max-width: 699px) { .counter { flex-basis: 40%; } }
+
+  /* ---------- diagrams use the full width ---------- */
+  .scroller { padding: 18px 14px 6px; }
+  .scroller svg { width: 100%; max-width: none; }
+
+  /* ---------- module map ---------- */
+  .groups { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 26px; }
+  @media (max-width: 760px) { .groups { grid-template-columns: repeat(2, 1fr); } }
+  .group {
+    font: inherit;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    position: relative;
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--accent);
+    box-shadow: var(--shadow);
+    padding: 22px 20px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: background .15s, transform .15s;
+  }
+  .group:hover { transform: translateY(-2px); }
+  .group[aria-expanded="true"] { background: var(--tint); border-color: var(--accent); }
+  .group::after { content: "+"; position: absolute; top: 14px; right: 16px; font-family: var(--mono); font-size: 22px; line-height: 1; color: var(--ink-soft); }
+  .group[aria-expanded="true"]::after { content: "\2212"; }
+  .gicon { width: 56px; height: 56px; color: var(--accent); }
+  .gname { font-family: var(--display); font-weight: 700; font-size: 18px; line-height: 1.2; }
+  .gcnt { font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); }
+  .ghint { font-family: var(--mono); font-size: 12.5px; color: var(--ink-soft); margin: 14px 0 0; }
+  .gpanel { margin-top: 18px; }
+  @media (prefers-reduced-motion: reduce) { .group { transition: none; } .group:hover { transform: none; } }
+  @media print { .gpanel[hidden] { display: block; } .ghint { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="topbar" aria-label="Site">
+    <a class="back" href="index.html?lang=en">&larr; Dmytro Zahoruiko</a>
+    <div class="lang" role="group" aria-label="Language / Sprache">
+      <a href="rebuilding_matches.html" lang="en" hreflang="en" aria-current="page" onclick="try{localStorage.setItem('lang','en')}catch(e){}">EN</a>
+      <a href="rebuilding_matches.de.html" lang="de" hreflang="de" onclick="try{localStorage.setItem('lang','de')}catch(e){}">DE</a>
+    </div>
+  </nav>
+
+
+  <header class="masthead">
+    <div class="inkbar" aria-hidden="true">
+      <span style="background: var(--cyan)"></span>
+      <span style="background: var(--magenta)"></span>
+      <span style="background: var(--ochre)"></span>
+      <span style="background: var(--green)"></span>
+      <span style="background: var(--ink)"></span>
+    </div>
+    <p class="eyebrow">Case study &middot; SAUERESSIG Group &middot; 2023 &rarr; 2026</p>
+    <h1>Rebuilding Matches</h1>
+    <p class="lede"><b>From a prototype that couldn&rsquo;t ship to a secure AI platform that customers rely on.</b> Matches lets a print company search years of artwork by picture, and answers one question in seconds: <i>have we made something like this before?</i></p>
+
+    <dl class="counters">
+      <div class="counter">
+        <dt>AWS cost</dt>
+        <dd>&minus;90%</dd>
+      </div>
+      <div class="counter">
+        <dt>Uptime</dt>
+        <dd>&gt;99.9%</dd>
+      </div>
+      <div class="counter">
+        <dt>Services</dt>
+        <dd><span class="was">4</span><span class="arw">&rarr;</span>20</dd>
+      </div>
+      <div class="counter">
+        <dt>Concurrency</dt>
+        <dd><span class="was">none</span><span class="arw">&rarr;</span>parallel</dd>
+      </div>
+      <div class="counter">
+        <dt>Surface check / sheet</dt>
+        <dd><span class="was">7.5 s</span><span class="arw">&rarr;</span>0.6 s</dd>
+      </div>
+      <div class="counter">
+        <dt>Automated tests</dt>
+        <dd><span class="was">0</span><span class="arw">&rarr;</span>591</dd>
+      </div>
+      <div class="counter">
+        <dt>Install and update</dt>
+        <dd><span class="was">by hand</span><span class="arw">&rarr;</span>1 command</dd>
+      </div>
+    </dl>
+  </header>
+
+  <section id="change">
+    <hr class="sec-rule">
+    <p class="eyebrow">Before &rarr; after</p>
+    <h2>From lab tool to product</h2>
+
+    <div class="compare">
+      <div>
+        <h3>Where it started</h3>
+        <ul>
+          <li>No login: anyone on the network could add or delete data</li>
+          <li>One task at a time, so a single upload blocked everything</li>
+          <li>The whole archive had to fit in memory, so cost grew with every image</li>
+          <li>Built and installed by hand, with no automated tests</li>
+        </ul>
+      </div>
+      <div class="after">
+        <h3>Where it is today</h3>
+        <ul>
+          <li>Secure login, three user roles, and each customer&rsquo;s data fully separated</li>
+          <li>20 services working in parallel, so a big upload never slows down a quick search</li>
+          <li>The archive lives on disk, and the AWS bill dropped by 90%</li>
+          <li>Set up or updated with one command, with 591 tests guarding every release</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="highlights">
+    <hr class="sec-rule">
+    <p class="eyebrow">Highlights</p>
+    <h2>What I delivered</h2>
+
+    <div class="wins">
+      <article class="win" style="--accent: var(--cyan)">
+        <span class="num">01</span>
+        <h3>Cut the cloud bill by 90%</h3>
+        <p>Moved search from an expensive in-memory vector database to <b>PostgreSQL</b>. The archive can now grow far beyond the server&rsquo;s memory, and each image&rsquo;s data takes a third of the space it used to.</p>
+        <ul class="tags"><li>PostgreSQL</li><li>pgvector</li><li>DiskANN</li></ul>
+      </article>
+
+      <article class="win" style="--accent: var(--magenta)">
+        <span class="num">02</span>
+        <h3>Taught the system to understand artwork</h3>
+        <p>It finds the actual design on a crowded print sheet, splits a layout into logos, illustrations and text, and reads text and barcodes. <b>A cut-out of a single logo is enough</b> to find every file that contains it.</p>
+        <ul class="tags"><li>PyTorch</li><li>CLIP</li><li>Grounding DINO</li><li>OCR</li></ul>
+      </article>
+
+      <article class="win" style="--accent: var(--ochre)">
+        <span class="num">03</span>
+        <h3>Replaced an AI model with something 10&times; faster</h3>
+        <p>For checking wood and stone surfaces, custom computer-vision rules beat the AI model: <b>7.5 s &rarr; 0.6 s per sheet</b>, with no GPU needed. Every flaw also comes back with a name, such as knot, crack or dark mark. Sometimes the best AI decision is to not use AI.</p>
+        <ul class="tags"><li>OpenCV</li><li>Classical CV</li></ul>
+      </article>
+
+      <article class="win" style="--accent: var(--green)">
+        <span class="num">04</span>
+        <h3>Finds a one-pixel difference in seconds</h3>
+        <p>It spots designs that differ by one tiny mark, across the whole archive. Comparing every file pixel by pixel would take <b>hours to days</b>.</p>
+        <a class="jump" href="#pixel">See how it works &darr;</a>
+        <ul class="tags"><li>Computer vision</li><li>Image search</li></ul>
+      </article>
+
+      <article class="win" style="--accent: var(--cyan)">
+        <span class="num">05</span>
+        <h3>Made it safe for real customers</h3>
+        <p>It went from an open port with no login to secure accounts, three user roles and <b>a separate database for every customer</b>. One customer&rsquo;s search can never reach another customer&rsquo;s data.</p>
+        <a class="jump" href="#tenants">See how it works &darr;</a>
+        <ul class="tags"><li>JWT</li><li>Role-based access</li><li>Multi-tenancy</li></ul>
+      </article>
+
+      <article class="win" style="--accent: var(--magenta)">
+        <span class="num">06</span>
+        <h3>Made it easy to ship</h3>
+        <p>Setting up a customer system used to mean a long manual checklist. Now it takes <b>one command</b>. Every release builds automatically, and 591 tests check every endpoint before anything goes out.</p>
+        <ul class="tags"><li>Docker</li><li>GitHub Actions</li><li>Bash</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <hr class="sec-rule">
+    <p class="eyebrow">Architecture</p>
+    <h2>Four containers, then twenty</h2>
+    <div class="col">
+      <p>At the start, one container ran almost everything, and tasks waited in line one after another. Today every layer is split into parts that scale, restart and deploy on their own, and the AI models run in their own GPU services.</p>
+    </div>
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 524" role="img" aria-label="Layer by layer comparison of the system at the start and today. Each of the five layers — client, entry, dispatch, compute, storage — was split from a single part into several specialised parts.">
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+            <symbol id="lg-postgresql" viewBox="0 0 24 24"><path d="M23.5594 14.7228a.5269.5269 0 0 0-.0563-.1191c-.139-.2632-.4768-.3418-1.0074-.2321-1.6533.3411-2.2935.1312-2.5256-.0191 1.342-2.0482 2.445-4.522 3.0411-6.8297.2714-1.0507.7982-3.5237.1222-4.7316a1.5641 1.5641 0 0 0-.1509-.235C21.6931.9086 19.8007.0248 17.5099.0005c-1.4947-.0158-2.7705.3461-3.1161.4794a9.449 9.449 0 0 0-.5159-.0816 8.044 8.044 0 0 0-1.3114-.1278c-1.1822-.0184-2.2038.2642-3.0498.8406-.8573-.3211-4.7888-1.645-7.2219.0788C.9359 2.1526.3086 3.8733.4302 6.3043c.0409.818.5069 3.334 1.2423 5.7436.4598 1.5065.9387 2.7019 1.4334 3.582.553.9942 1.1259 1.5933 1.7143 1.7895.4474.1491 1.1327.1441 1.8581-.7279.8012-.9635 1.5903-1.8258 1.9446-2.2069.4351.2355.9064.3625 1.39.3772a.0569.0569 0 0 0 .0004.0041 11.0312 11.0312 0 0 0-.2472.3054c-.3389.4302-.4094.5197-1.5002.7443-.3102.064-1.1344.2339-1.1464.8115-.0025.1224.0329.2309.0919.3268.2269.4231.9216.6097 1.015.6331 1.3345.3335 2.5044.092 3.3714-.6787-.017 2.231.0775 4.4174.3454 5.0874.2212.5529.7618 1.9045 2.4692 1.9043.2505 0 .5263-.0291.8296-.0941 1.7819-.3821 2.5557-1.1696 2.855-2.9059.1503-.8707.4016-2.8753.5388-4.1012.0169-.0703.0357-.1207.057-.1362.0007-.0005.0697-.0471.4272.0307a.3673.3673 0 0 0 .0443.0068l.2539.0223.0149.001c.8468.0384 1.9114-.1426 2.5312-.4308.6438-.2988 1.8057-1.0323 1.5951-1.6698zM2.371 11.8765c-.7435-2.4358-1.1779-4.8851-1.2123-5.5719-.1086-2.1714.4171-3.6829 1.5623-4.4927 1.8367-1.2986 4.8398-.5408 6.108-.13-.0032.0032-.0066.0061-.0098.0094-2.0238 2.044-1.9758 5.536-1.9708 5.7495-.0002.0823.0066.1989.0162.3593.0348.5873.0996 1.6804-.0735 2.9184-.1609 1.1504.1937 2.2764.9728 3.0892.0806.0841.1648.1631.2518.2374-.3468.3714-1.1004 1.1926-1.9025 2.1576-.5677.6825-.9597.5517-1.0886.5087-.3919-.1307-.813-.5871-1.2381-1.3223-.4796-.839-.9635-2.0317-1.4155-3.5126zm6.0072 5.0871c-.1711-.0428-.3271-.1132-.4322-.1772.0889-.0394.2374-.0902.4833-.1409 1.2833-.2641 1.4815-.4506 1.9143-1.0002.0992-.126.2116-.2687.3673-.4426a.3549.3549 0 0 0 .0737-.1298c.1708-.1513.2724-.1099.4369-.0417.156.0646.3078.26.3695.4752.0291.1016.0619.2945-.0452.4444-.9043 1.2658-2.2216 1.2494-3.1676 1.0128zm2.094-3.988-.0525.141c-.133.3566-.2567.6881-.3334 1.003-.6674-.0021-1.3168-.2872-1.8105-.8024-.6279-.6551-.9131-1.5664-.7825-2.5004.1828-1.3079.1153-2.4468.079-3.0586-.005-.0857-.0095-.1607-.0122-.2199.2957-.2621 1.6659-.9962 2.6429-.7724.4459.1022.7176.4057.8305.928.5846 2.7038.0774 3.8307-.3302 4.7363-.084.1866-.1633.3629-.2311.5454zm7.3637 4.5725c-.0169.1768-.0358.376-.0618.5959l-.146.4383a.3547.3547 0 0 0-.0182.1077c-.0059.4747-.054.6489-.115.8693-.0634.2292-.1353.4891-.1794 1.0575-.11 1.4143-.8782 2.2267-2.4172 2.5565-1.5155.3251-1.7843-.4968-2.0212-1.2217a6.5824 6.5824 0 0 0-.0769-.2266c-.2154-.5858-.1911-1.4119-.1574-2.5551.0165-.5612-.0249-1.9013-.3302-2.6462.0044-.2932.0106-.5909.019-.8918a.3529.3529 0 0 0-.0153-.1126 1.4927 1.4927 0 0 0-.0439-.208c-.1226-.4283-.4213-.7866-.7797-.9351-.1424-.059-.4038-.1672-.7178-.0869.067-.276.1831-.5875.309-.9249l.0529-.142c.0595-.16.134-.3257.213-.5012.4265-.9476 1.0106-2.2453.3766-5.1772-.2374-1.0981-1.0304-1.6343-2.2324-1.5098-.7207.0746-1.3799.3654-1.7088.5321a5.6716 5.6716 0 0 0-.1958.1041c.0918-1.1064.4386-3.1741 1.7357-4.4823a4.0306 4.0306 0 0 1 .3033-.276.3532.3532 0 0 0 .1447-.0644c.7524-.5706 1.6945-.8506 2.802-.8325.4091.0067.8017.0339 1.1742.081 1.939.3544 3.2439 1.4468 4.0359 2.3827.8143.9623 1.2552 1.9315 1.4312 2.4543-1.3232-.1346-2.2234.1268-2.6797.779-.9926 1.4189.543 4.1729 1.2811 5.4964.1353.2426.2522.4522.2889.5413.2403.5825.5515.9713.7787 1.2552.0696.087.1372.1714.1885.245-.4008.1155-1.1208.3825-1.0552 1.717-.0123.1563-.0423.4469-.0834.8148-.0461.2077-.0702.4603-.0994.7662zm.8905-1.6211c-.0405-.8316.2691-.9185.5967-1.0105a2.8566 2.8566 0 0 0 .135-.0406 1.202 1.202 0 0 0 .1342.103c.5703.3765 1.5823.4213 3.0068.1344-.2016.1769-.5189.3994-.9533.6011-.4098.1903-1.0957.333-1.7473.3636-.7197.0336-1.0859-.0807-1.1721-.151zm.5695-9.2712c-.0059.3508-.0542.6692-.1054 1.0017-.055.3576-.112.7274-.1264 1.1762-.0142.4368.0404.8909.0932 1.3301.1066.887.216 1.8003-.2075 2.7014a3.5272 3.5272 0 0 1-.1876-.3856c-.0527-.1276-.1669-.3326-.3251-.6162-.6156-1.1041-2.0574-3.6896-1.3193-4.7446.3795-.5427 1.3408-.5661 2.1781-.463zm.2284 7.0137a12.3762 12.3762 0 0 0-.0853-.1074l-.0355-.0444c.7262-1.1995.5842-2.3862.4578-3.4385-.0519-.4318-.1009-.8396-.0885-1.2226.0129-.4061.0666-.7543.1185-1.0911.0639-.415.1288-.8443.1109-1.3505.0134-.0531.0188-.1158.0118-.1902-.0457-.4855-.5999-1.938-1.7294-3.253-.6076-.7073-1.4896-1.4972-2.6889-2.0395.5251-.1066 1.2328-.2035 2.0244-.1859 2.0515.0456 3.6746.8135 4.8242 2.2824a.908.908 0 0 1 .0667.1002c.7231 1.3556-.2762 6.2751-2.9867 10.5405zm-8.8166-6.1162c-.025.1794-.3089.4225-.6211.4225a.5821.5821 0 0 1-.0809-.0056c-.1873-.026-.3765-.144-.5059-.3156-.0458-.0605-.1203-.178-.1055-.2844.0055-.0401.0261-.0985.0925-.1488.1182-.0894.3518-.1226.6096-.0867.3163.0441.6426.1938.6113.4186zm7.9305-.4114c.0111.0792-.049.201-.1531.3102-.0683.0717-.212.1961-.4079.2232a.5456.5456 0 0 1-.075.0052c-.2935 0-.5414-.2344-.5607-.3717-.024-.1765.2641-.3106.5611-.352.297-.0414.6111.0088.6356.1851z" fill="#336791"></path></symbol>
+            <symbol id="lg-redis" viewBox="0 0 24 24"><path d="M22.71 13.145c-1.66 2.092-3.452 4.483-7.038 4.483-3.203 0-4.397-2.825-4.48-5.12.701 1.484 2.073 2.685 4.214 2.63 4.117-.133 6.94-3.852 6.94-7.239 0-4.05-3.022-6.972-8.268-6.972-3.752 0-8.4 1.428-11.455 3.685C2.59 6.937 3.885 9.958 4.35 9.626c2.648-1.904 4.748-3.13 6.784-3.744C8.12 9.244.886 17.05 0 18.425c.1 1.261 1.66 4.648 2.424 4.648.232 0 .431-.133.664-.365a100.49 100.49 0 0 0 5.54-6.765c.222 3.104 1.748 6.898 6.014 6.898 3.819 0 7.604-2.756 9.33-8.965.2-.764-.73-1.361-1.261-.73zm-4.349-5.013c0 1.959-1.926 2.922-3.685 2.922-.941 0-1.664-.247-2.235-.568 1.051-1.592 2.092-3.225 3.21-4.973 1.972.334 2.71 1.43 2.71 2.619z" fill="#FF4438"></path></symbol>
+            <symbol id="lg-rabbitmq" viewBox="0 0 24 24"><path d="M23.035 9.601h-7.677a.956.956 0 01-.962-.962V.962a.956.956 0 00-.962-.956H10.56a.956.956 0 00-.962.956V8.64a.956.956 0 01-.962.962H5.762a.956.956 0 01-.961-.962V.962A.956.956 0 003.839 0H.959a.956.956 0 00-.956.962v22.076A.956.956 0 00.965 24h22.07a.956.956 0 00.962-.962V10.58a.956.956 0 00-.962-.98zm-3.86 8.152a1.437 1.437 0 01-1.437 1.443h-1.924a1.437 1.437 0 01-1.436-1.443v-1.917a1.437 1.437 0 011.436-1.443h1.924a1.437 1.437 0 011.437 1.443z" fill="#FF6600"></path></symbol>
+            <symbol id="lg-celery" viewBox="0 0 24 24"><path d="M2.303 0A2.298 2.298 0 0 0 0 2.303v19.394A2.298 2.298 0 0 0 2.303 24h19.394A2.298 2.298 0 0 0 24 21.697V2.303A2.298 2.298 0 0 0 21.697 0zm8.177 3.072c4.098 0 7.028 1.438 7.68 1.764l-1.194 2.55c-2.442-1.057-4.993-1.41-5.672-1.41-1.574 0-2.17.922-2.17 1.763v8.494c0 .869.596 1.791 2.17 1.791.679 0 3.23-.38 5.672-1.41l1.194 2.496c-.435.271-3.637 1.818-7.68 1.818-1.112 0-4.64-.244-4.64-4.64V7.713c0-4.397 3.528-4.64 4.64-4.64z" fill="#37814A"></path></symbol>
+            <symbol id="lg-fastapi" viewBox="0 0 24 24"><path d="M12 .0387C5.3729.0384.0003 5.3931 0 11.9988c-.001 6.6066 5.372 11.9628 12 11.9625 6.628.0003 12.001-5.3559 12-11.9625-.0003-6.6057-5.3729-11.9604-12-11.96m-.829 5.4153h7.55l-7.5805 5.3284h5.1828L5.279 18.5436q2.9466-6.5444 5.892-13.0896" fill="#009688"></path></symbol>
+            <symbol id="lg-apachesolr" viewBox="0 0 24 24"><path d="M20.741 3.8L8.926 16.573l14.849-6.851A11.979 11.979 0 0 0 20.741 3.8M11.975 0c-1.637 0-3.197.328-4.619.921l-1.585 13.36L13.693.124A12.168 12.168 0 0 0 11.975 0m11.918 10.459l-14.07 7.874 13.201-1.566a11.976 11.976 0 0 0 .869-6.308m-5.188 11.527a12.084 12.084 0 0 0 3.8-4.16l-12.374 2.457 8.574 1.703zM14.417.249L7.53 15.177 20.306 3.36A11.978 11.978 0 0 0 14.417.249M12.98 24a11.938 11.938 0 0 0 3.774-.945l-6.931-.822L12.98 24zM1.016 7.08a11.944 11.944 0 0 0-1.013 3.864l1.867 3.337-.854-7.201zm5.298-5.665a12.076 12.076 0 0 0-4.236 3.784l1.743 8.773L6.314 1.415z" fill="#D9411E"></path></symbol>
+            <symbol id="lg-pytorch" viewBox="0 0 24 24"><path d="M12.005 0L4.952 7.053a9.865 9.865 0 000 14.022 9.866 9.866 0 0014.022 0c3.984-3.9 3.986-10.205.085-14.023l-1.744 1.743c2.904 2.905 2.904 7.634 0 10.538s-7.634 2.904-10.538 0-2.904-7.634 0-10.538l4.647-4.646.582-.665zm3.568 3.899a1.327 1.327 0 00-1.327 1.327 1.327 1.327 0 001.327 1.328A1.327 1.327 0 0016.9 5.226 1.327 1.327 0 0015.573 3.9z" fill="#EE4C2C"></path></symbol>
+          </defs>
+
+          <!-- panel headers -->
+          <text class="svg-ttl" x="150" y="20">Starting point</text>
+          <text class="svg-sub" x="150" y="36">4 containers &middot; one of them ran everything</text>
+          <text class="svg-ttl" x="545" y="20">Today</text>
+          <text class="svg-sub" x="545" y="36">20 containers &middot; one job type each</text>
+          <line class="svg-dash" x1="516" y1="8" x2="516" y2="510"></line>
+
+          <!-- row labels -->
+          <text class="svg-row" x="128" y="78" text-anchor="end">CLIENT</text>
+          <text class="svg-row" x="128" y="158" text-anchor="end">ENTRY</text>
+          <text class="svg-row" x="128" y="238" text-anchor="end">DISPATCH</text>
+          <text class="svg-row" x="128" y="318" text-anchor="end">COMPUTE</text>
+          <text class="svg-row" x="128" y="470" text-anchor="end">STORAGE</text>
+
+          <!-- ===== starting point ===== -->
+          <g color="var(--ink)">
+            <rect class="svg-box" x="150" y="50" width="330" height="52"></rect>
+            <text class="svg-lbl" x="164" y="72">Scripts and test tools</text>
+            <text class="svg-sub" x="164" y="88">no login, open port</text>
+
+            <rect class="svg-box" x="150" y="130" width="330" height="52"></rect>
+            <text class="svg-lbl" x="164" y="152">FastAPI</text>
+            <text class="svg-sub" x="164" y="168">same container as the workers</text>
+
+            <rect class="svg-box" x="150" y="210" width="330" height="52"></rect>
+            <text class="svg-lbl" x="164" y="232">Redis queue</text>
+            <text class="svg-sub" x="164" y="248">also held job status and settings</text>
+
+            <rect class="svg-box" x="150" y="290" width="330" height="52"></rect>
+            <text class="svg-lbl" x="164" y="312">Celery workers, CPU only</text>
+            <text class="svg-sub" x="164" y="328">CLIP model loaded per worker</text>
+
+            <rect class="svg-box" x="150" y="442" width="330" height="56" style="fill: var(--t-cyan)"></rect>
+            <text class="svg-lbl" x="164" y="466">Weaviate</text>
+            <text class="svg-sub" x="164" y="482">vectors and all metadata in one place</text>
+
+            <path class="svg-line" d="M 315 102 L 315 128" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 315 182 L 315 208" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 315 262 L 315 288" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 315 342 L 315 440" marker-end="url(#a1)"></path>
+            <text class="svg-edge" x="325" y="396">read and write</text>
+          </g>
+
+          <!-- ===== today ===== -->
+          <g color="var(--ink)">
+            <rect class="svg-box" x="545" y="50" width="440" height="52"></rect>
+            <text class="svg-lbl" x="559" y="72">Web app and customer systems</text>
+            <text class="svg-sub" x="559" y="88">token login, one tenant per account</text>
+
+            <rect class="svg-box" x="545" y="130" width="440" height="52" style="fill: var(--t-green)"></rect>
+            <text class="svg-lbl" x="559" y="152">API gateway</text>
+            <text class="svg-sub" x="559" y="168">checks the token, the role and the rate limit</text>
+
+            <rect class="svg-box" x="545" y="210" width="440" height="52"></rect>
+            <text class="svg-lbl" x="559" y="232">RabbitMQ</text>
+            <text class="svg-sub" x="559" y="248">seven queues: four for workers, three for the AI services</text>
+
+            <rect class="svg-box" x="545" y="290" width="130" height="52" style="fill: var(--t-ochre)"></rect>
+            <text class="svg-lbl" x="555" y="310">Fast workers</text>
+            <text class="svg-sub" x="555" y="325">search, text</text>
+
+            <rect class="svg-box" x="855" y="290" width="130" height="52" style="fill: var(--t-ochre)"></rect>
+            <text class="svg-lbl" x="865" y="310">Long workers</text>
+            <text class="svg-sub" x="865" y="325">uploads, images</text>
+
+            <rect class="svg-box" x="700" y="290" width="130" height="52" style="fill: var(--t-magenta)"></rect>
+            <text class="svg-lbl" x="710" y="310">AI services</text>
+            <text class="svg-sub" x="710" y="324">GPU &middot; CLIP, DINO</text>
+            <text class="svg-sub" x="710" y="336">and classifiers</text>
+
+            <rect class="svg-box" x="545" y="442" width="130" height="56" style="fill: var(--t-cyan)"></rect>
+            <text class="svg-lbl" x="555" y="464">PostgreSQL</text>
+            <text class="svg-sub" x="555" y="478">records + vectors</text>
+            <text class="svg-sub" x="555" y="491">per tenant</text>
+
+            <rect class="svg-box" x="700" y="442" width="130" height="56" style="fill: var(--t-cyan)"></rect>
+            <text class="svg-lbl" x="710" y="464">Solr</text>
+            <text class="svg-sub" x="710" y="478">full text</text>
+            <text class="svg-sub" x="710" y="491">per tenant</text>
+
+            <rect class="svg-box" x="855" y="442" width="130" height="56"></rect>
+            <text class="svg-lbl" x="865" y="464">Redis</text>
+            <text class="svg-sub" x="865" y="478">job status</text>
+            <text class="svg-sub" x="865" y="491">revoked tokens</text>
+
+            <path class="svg-line" d="M 765 102 L 765 128" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 765 182 L 765 208" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 740 262 L 622 288" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 790 262 L 908 288" marker-end="url(#a1)"></path>
+            <text class="svg-edge" x="985" y="276" text-anchor="end">jobs</text>
+            <path class="svg-line" d="M 676 307 L 698 307" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 699 325 L 677 325" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 854 307 L 832 307" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 831 325 L 853 325" marker-end="url(#a1)"></path>
+            <text class="svg-edge" x="765" y="358" text-anchor="middle">workers call, AI answers</text>
+            <path class="svg-line" d="M 610 342 L 610 440" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 920 342 L 920 440" marker-end="url(#a1)"></path>
+            <path class="svg-line" d="M 610 400 L 920 400"></path>
+            <path class="svg-line" d="M 765 400 L 765 440" marker-end="url(#a1)"></path>
+            <text class="svg-edge" x="915" y="394" text-anchor="end">write and read</text>
+          </g>
+          <g aria-hidden="true">
+            <rect x="455" y="137" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-fastapi" x="457" y="139" width="14" height="14"></use>
+            <rect x="455" y="217" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-redis" x="457" y="219" width="14" height="14"></use>
+            <rect x="455" y="297" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-celery" x="457" y="299" width="14" height="14"></use>
+            <rect x="455" y="449" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAALN0lEQVR42u2Ya4xd1XXHf2vvc+69M+PxjN8DHtuJiYckhgA1JC5tMKihpYgEWmVGbVWIwiM0oBYlThPCo9dDWok0ikLafgDUVlXaRupM21RpRRvKy63wIzI0D+wEY2xs49eMPeOZe+7jnLP3Xv1wZsYT20Bd3A+VZklbOld3n73Xf63/+q+zN8zZnM3ZnM3ZnP0/NjmXyarI1Dsqgp5PR/4v157ewJ5lw/Pp/Fvu9W4XN6oYKJMkOy7Isls3jI/v6wY5LyCm11DVsma3/LzWvrUUTPHf0LsAoooMDWEhQlU70slb78prl+7W7D3aGl29dXLyqSWqyLsBMf3+6Oifd6ajFz2t+cXqJi/b607cdKeqRgBDQ9hqdQrROSxqwaCq0pp46Ka8fs2Lqjeo6n2aN+7JVT+kydH1dxZz/vdRmn43P37N9epXq2v8utdwu6r/mLrxq7Y2j/3GDVCZmXu2YEWn00WEAO0+Tf95bZ7c8EUbN26L2tbg88uCmD5M6SRwIChj8zlPZZBm9ThqtEIgBbcswHK13W+sN8lr/9oaueyvW3rzIyIP7wE/y8fCzOzIi5igk7q4WfvVTeI2bY7ndd2G/ai6bE1QHTXB7zQhjAtYEyifN6VQ08h8a8yktR3kyfNG84PWpb3BReu1vKTn1rboH7cnh69+eN++fd0iEmZTKjrlvGgyds9lqV33N5X2RZeov5w8W+QJJ6zLXxKfH8JEvUTlSyGk5D47bwB82iIvZWStEfJsEhsfJqqsNlFlDXn6fh91LF1Ymv/6I3bslt+aOHjHp7tW/OW2ajWYwUGCmVGB0Uc7s/yfhsrt8SVZa02eZbnm6TZbr32PZGIr9eR18uwoIYyDpoTgwtvzW2X2eLu5DnAKzitZ3qTZOET95A7q48+R1V+2mTOauXV5ZdF735/7F7+T7Hu0Z9MmVBUxDGNE0KPu2x8wNuk7OdbwafrDuF57ViZPbiFJ9tJo1UjzHBcyQkjx3uHVKWfpN6pIVTEiorNHVTFvBcSpaO4hD+A85M6Tpgn12n4mx7aTnHxRfD4ep9lq1z6/s6cWvnflVLMzM0XsvbfN0FTv9hoQnEsJ3hFQNIAxivMeDQ4flNSdGfFNiBQFZlXVtQHzKFAmIrY1iFBVzCZURWQGvXNgBFwoZuvMcJDXyNx+bLyMSkef8SHW3Gk8UwPDUw95LhqskzRNVZm9SDFEoRwCXh1GA17DjAP92m9FxAuRvpl+94qGO/7JPfXhj0iIewKASY/urD3+/djNG+6T3/6vQYR+7bcvMCwFhRwSigygp++tWJfjfIMQmriQi1MTzpDRHPAeslCE7GcWCSBGybzDhxYERx6CVtWbTS+IDF837F5p/PvKA/nLv38g2/+pnnnv6yzTjQaDIIjRtS1O/NKh2k9/77vjD3xrQXnNox+VTx3oV2z/UL91bjtIAWB6z2kgQSES8ApBA04Vjz+zD7gcsAUAFAKnnA9TGagEX9SBdyQ+Z1Ak6A617SMP3Le1teX+1Z19Pa7ZyatjI76mu2hpXYwYOqRbu+QC2qIPdHTMW/jZH9de+WT12L1/3L/zz/5kYECyL+9aYTrCVPD0zOAFAaeeoAGvSna2RqaR0/wtMjANIPOePKRYzehRbX7i4Dc+ckd879dXVZb/gncX8tLxcX/A/8Ac1SO2HhK8egQhNjHdppuVZqWuar4ndMSXLjHte7922+K7Bm48/KUvXDH5ncauAKmfEYJTA1AUHzxePQ5F9ZR6zABo5uCBdFYUAqcyAEoleHzITDKR8o3Qs3Fv9mpfpW1ZtHMM/4zfaY7oiK25hOAdhIKmIqDiETNCFI3L4uiAXW17tUcWBN/ee9X+2oHNN/ulL32+uTtUrJjcK+EMcVOcBnzwUxQqbPj0Gsj9aQCUmcUiA3kIjOVeRpLAbqIP7k8tx4+d8JPUbTM0UO8QDYWkiJmqforfHsgdh+UEO6OadEVdtrvVHsYoGW913faTsLQCvWUomaIvzD60eAKBgAdcdBYK5Q5SLdI4TaEA2CnlPtqCw86zPHKoeHSCUKMpTWlZr4ooSBSBsTCZQt0VEVGKKpxXgq4YMUKo54ybMRJz0uQS6QWpqijmtQSONGFVOyypTDmu0wDAqxYZcGcB4IDWVAaQImhGYDKHQ3UYz+DCzkCYKuLQEoM3GDFgDFQMNB2MJJDkUz3OzkplBu0BVnZAVwkyh3qPGhF1CAplgZaDn0wWAVvZAZ0xeKFwPDicehzZmTVwMFHTVmbmYJd6GGnA8VYRhVgA9WQuw/uMkAlkJUybQTEFyuPNQjKkcpoSFM/aUBhtID0VeG8bJvZF2p0QwqlkAUxksCuHxWVY0WUQY1EgC15PZKc+g2ca2f5JTdpKyIISmnoYqUPmCwrFU9LggqeVZ4Q8Q7UEpW6kPok5NAH1DGw8o99nSklBM1Th1RwOBmRtO9JTRnw81WtOUSOWYupYFtGedbFKlpCFmDdrXo41S7XpKo6GB/AocuVrv7x72743dibBr82a5NYQR2ZaxqZ4GJTM5xgchDIczJHRCUQNmMpM8xBVVdSjaggKShBVixbnUIjhuEeea0CvxfSVsHEh1TKrdNtKJZZ1LqS3+yKcLnYH6yP28Hh2eHnnx3+AbpF+CAagfxhzY9+fph3l3t+NTRwq7cRMC8EUpQoggaCOEadMvp4Q7WkirQrSLGPqJUw9xtSjIM2yWDc/irMOE2cdxvrOSJplkUbspREjSYS0Skhewr7iSLZlHPFT4iUgIsyrlFnRvZTe7tXEpssda+6PDiV7JbKL77vpQw+M9099hBqA4QF8tYr50rV7n9es91eEth+1zScyFjWCNwashaZXDtYcRxKPNi0mrSD1GNMoIfUS0oid5J2mnFZOdrbsV1bYro+tKi+8bn4aP1xqVUbJ2q3UIyeNiOlh8hI0DYcbsDeBXA2LOtrp7V7CgraloeVcOOb2RG+ePLinMbHg1+5Yv+Pvq6pmeKBoBzNFPDhIqKqah2XfM9986psfHvePPJAz+ZAt5zZr4OspJg9Butsc1jpsZpCkhIkdGkRVNUipElVC2L66e+Gnt//h/T85dorSL3z4wa/87RvHT/xFw5WuC2nDiwYjGJE0wmaGdsB7Q+LLqOnSPLT7kXwiGm82wLc9Vi7fs+nua+6fqCpmcNaR8ozv8/4hbIFO+J1/uGg90ZGvEjevadUDsbF+frliTVTn6f+4md17L6dcqvvgI2tKJebF+sTnLr70cxs3DjT5zGdixseLjRYsMDz5ZL7jiR3xLVv+7tGkkX8+z1Os5j7LYnvh8v1cf+NTVEyJ7rYOb23ZaiXQTKIdPlt2/9c+8aNnwTM0hB0YmPUld/qhfppOKNKPmsdlzzZVvfa+f1l0r60kg1ElW9hMWloy+IXzjuKOd5p4fsnGUT6xII7v2fvkg9/eCFCtGgYH89mnRqpVc+XdVzqBjWt+86H/PN7giSwvL03HbFh6yUhoK0HI1fpS02ZZqNlG1x/dvnr/Y319kg4NYfv7CSI/6/w7Xi1WFTNIoR3Vf7vifQm7v66SfTyqeAFh50vrOfjauq2VcMFnv//El3/Ihg0Rmzd7eMurQWHDBsvmze7q2x+6uBYOPN67+qfXXv6LL2NMwKUWK5WnK7L2C39w/fYfg85ixLuw6vPTmbJ8dcu6n3tw8+I7vvjc/Lv/6kDlmkplhnv/4/uh/v5+C1AuwfCbnVdvenbBXdVnFt/52IuXXzVNig1VIjh/15dUqxjOekMmBWXOfUEDZzkjK3IuN3HnjLCqGF4oNtg1ig4PEN6GMu+cjSHsB5dM+XEtYbbCzNmczdmczdmcvZP9N5k01xNqPlEzAAAAAElFTkSuQmCC" x="457" y="451" width="14" height="14"></image>
+            <rect x="960" y="137" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-fastapi" x="962" y="139" width="14" height="14"></use>
+            <rect x="960" y="217" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-rabbitmq" x="962" y="219" width="14" height="14"></use>
+            <rect x="650" y="297" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-celery" x="652" y="299" width="14" height="14"></use>
+            <rect x="960" y="297" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-celery" x="962" y="299" width="14" height="14"></use>
+            <rect x="805" y="297" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-pytorch" x="807" y="299" width="14" height="14"></use>
+            <rect x="650" y="449" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-postgresql" x="652" y="451" width="14" height="14"></use>
+            <rect x="805" y="449" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-apachesolr" x="807" y="451" width="14" height="14"></use>
+            <rect x="960" y="449" width="18" height="18" rx="3" fill="#FFFFFF" stroke="#D5DADC" stroke-width="0.75"></rect>
+            <use href="#lg-redis" x="962" y="451" width="14" height="14"></use>
+          </g>
+        </svg>
+      </div>
+      <figcaption>The same five layers, before and after. Only the workers talk to the AI services: they send model work through its own queues, get the results back and then write to the databases. An AI machine can be added, restarted or moved without touching anything else.</figcaption>
+    </figure>
+  </section>
+
+  <section id="ingest">
+    <hr class="sec-rule">
+    <p class="eyebrow">Image understanding</p>
+    <h2>What happens to one uploaded image</h2>
+    <div class="col">
+      <p>An upload isn&rsquo;t just stored. The system works out what the image contains: where the design is, which text and barcodes are on it, and how it looks as numbers a computer can compare. None of these steps existed at the start.</p>
+    </div>
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 386" role="img" aria-label="The upload pipeline: an image is checked, the region of interest is found, text and barcodes are read, CLIP embeddings are generated on the GPU, and the results are written to PostgreSQL and Solr before the caller is notified.">
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <g color="var(--ink)">
+            <rect class="svg-box" x="8" y="150" width="130" height="70"></rect>
+            <text class="svg-lbl" x="20" y="180">Image or PDF</text>
+            <text class="svg-sub" x="20" y="197">arrives by API</text>
+
+            <rect class="svg-box" x="176" y="150" width="140" height="70"></rect>
+            <text class="svg-lbl" x="188" y="174">Checks</text>
+            <text class="svg-sub" x="188" y="191">format, size,</text>
+            <text class="svg-sub" x="188" y="205">already known?</text>
+
+            <rect class="svg-box" x="354" y="42" width="196" height="66" style="fill: var(--t-magenta)"></rect>
+            <text class="svg-lbl" x="366" y="66">Region of interest</text>
+            <text class="svg-sub" x="366" y="83">which part is the design</text>
+            <text class="svg-sub" x="366" y="97">and how often it repeats</text>
+
+            <rect class="svg-box" x="354" y="152" width="196" height="66" style="fill: var(--t-magenta)"></rect>
+            <text class="svg-lbl" x="366" y="176">Text, by OCR</text>
+            <text class="svg-sub" x="366" y="193">Tesseract, rotation aware,</text>
+            <text class="svg-sub" x="366" y="207">per region</text>
+
+            <rect class="svg-box" x="354" y="262" width="196" height="66" style="fill: var(--t-magenta)"></rect>
+            <text class="svg-lbl" x="366" y="286">Barcodes</text>
+            <text class="svg-sub" x="366" y="303">ZBar, all common</text>
+            <text class="svg-sub" x="366" y="317">1D and 2D codes</text>
+
+            <rect class="svg-box" x="592" y="42" width="180" height="66" style="fill: var(--t-magenta)"></rect>
+            <text class="svg-lbl" x="604" y="66">CLIP vectors</text>
+            <text class="svg-sub" x="604" y="83">AI service, graphics card,</text>
+            <text class="svg-sub" x="604" y="97">one vector per region</text>
+
+            <rect class="svg-box" x="816" y="42" width="176" height="66" style="fill: var(--t-cyan)"></rect>
+            <text class="svg-lbl" x="828" y="66">PostgreSQL</text>
+            <text class="svg-sub" x="828" y="83">record, fields,</text>
+            <text class="svg-sub" x="828" y="97">text and vectors</text>
+
+            <rect class="svg-box" x="816" y="182" width="176" height="66" style="fill: var(--t-cyan)"></rect>
+            <text class="svg-lbl" x="828" y="206">Solr</text>
+            <text class="svg-sub" x="828" y="223">full text index</text>
+
+            <rect class="svg-box" x="592" y="290" width="180" height="66" style="fill: var(--t-green)"></rect>
+            <text class="svg-lbl" x="604" y="314">Caller told</text>
+            <text class="svg-sub" x="604" y="331">status endpoint</text>
+            <text class="svg-sub" x="604" y="345">or webhook</text>
+
+            <path class="svg-line" d="M 138 185 L 174 185" marker-end="url(#a2)"></path>
+            <path class="svg-line" d="M 316 185 L 336 185 L 336 75 L 352 75" marker-end="url(#a2)"></path>
+            <path class="svg-line" d="M 336 185 L 352 185" marker-end="url(#a2)"></path>
+            <path class="svg-line" d="M 336 185 L 336 295 L 352 295" marker-end="url(#a2)"></path>
+            <path class="svg-line" d="M 550 75 L 590 75" marker-end="url(#a2)"></path>
+            <text class="svg-edge" x="552" y="66">crops</text>
+            <path class="svg-line" d="M 772 75 L 814 75" marker-end="url(#a2)"></path>
+            <text class="svg-edge" x="774" y="66">vectors</text>
+            <path class="svg-line" d="M 550 185 L 700 185 L 700 130 L 795 130"></path>
+            <path class="svg-line" d="M 795 130 L 795 95 L 812 95" marker-end="url(#a2)"></path>
+            <path class="svg-line" d="M 795 130 L 795 205 L 812 205" marker-end="url(#a2)"></path>
+            <text class="svg-edge" x="712" y="124">text and codes</text>
+            <path class="svg-line" d="M 550 295 L 570 295 L 570 186"></path>
+            <path class="svg-line" d="M 904 248 L 904 323 L 774 323" marker-end="url(#a2)"></path>
+            <text class="svg-edge" x="806" y="316">done</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>The upload path. The three magenta steps are the image-understanding modules; the region-of-interest step runs first because the other steps work on the regions it finds.</figcaption>
+    </figure>
+  </section>
+
+  <section id="pixel">
+    <hr class="sec-rule">
+    <p class="eyebrow">Pixel-exact search</p>
+    <h2>Finding the smallest difference</h2>
+    <div class="col">
+      <p>Two versions of a packaging design can be almost identical: one is missing a tiny technical mark, the other has one extra logo. Matches finds the closest design in the archive and <b>shows exactly what differs, down to a single pixel.</b></p>
+      <p>It works across the whole archive and answers in seconds. Comparing every file by hand, or even pixel by pixel by computer, would take hours to days.</p>
+    </div>
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 340" role="img" aria-label="Pixel-exact search: one design goes in, the whole archive is searched, and the closest design comes back with every difference marked: a removed mark, an added logo and a single changed pixel.">
+          <defs>
+            <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <g color="var(--ink)">
+            <!-- column heads -->
+            <text class="svg-row" x="8" y="40">QUERY</text>
+            <text class="svg-row" x="200" y="40">ARCHIVE</text>
+            <text class="svg-row" x="790" y="40">RESULT</text>
+
+            <!-- query design -->
+            <rect class="svg-box" x="8" y="60" width="150" height="210"></rect>
+            <rect x="38" y="78" width="90" height="170" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="44" y="86" width="78" height="9" fill="var(--t-cyan)"></rect>
+            <rect x="47" y="108" width="40" height="3" fill="var(--rule)"></rect>
+            <rect x="47" y="117" width="27" height="3" fill="var(--rule)"></rect>
+            <rect x="47" y="142" width="72" height="64" fill="var(--t-ochre)"></rect>
+            <path d="M 83 223 L 88.5 232 L 77.5 232 Z" fill="none" stroke="var(--ink-soft)" stroke-width="1.2"></path>
+            <circle cx="115" cy="228" r="3" fill="none" stroke="var(--ink-soft)" stroke-width="1.2"></circle>
+            <path d="M 109.5 228 h 11 M 115 222.5 v 11" stroke="var(--ink-soft)" stroke-width="1.2"></path>
+            <text class="svg-sub" x="22" y="263">one design</text>
+
+            <!-- the archive, searched as a whole -->
+            <rect class="svg-box" x="200" y="60" width="550" height="210"></rect>
+            <rect x="223.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="228.0" y="86" width="26" height="14" fill="var(--t-ochre)"></rect>
+            <rect x="228.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="275.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="279.0" y="76" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="284.0" y="86" width="18" height="16" fill="var(--t-ochre)"></rect>
+            <rect x="280.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="327.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="331.0" y="76" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="334.0" y="86" width="22" height="20" fill="var(--t-ochre)"></rect>
+            <rect x="332.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="379.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="385.0" y="86" width="24" height="18" fill="var(--t-ochre)"></rect>
+            <rect x="384.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="431.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="435.0" y="76" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="435.0" y="86" width="28" height="10" fill="var(--t-ochre)"></rect>
+            <rect x="436.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="483.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="487.0" y="76" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="488.0" y="86" width="26" height="14" fill="var(--t-ochre)"></rect>
+            <rect x="488.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="535.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="544.0" y="86" width="18" height="16" fill="var(--t-ochre)"></rect>
+            <rect x="540.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="587.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="591.0" y="76" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="594.0" y="86" width="22" height="20" fill="var(--t-ochre)"></rect>
+            <rect x="592.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="639.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="643.0" y="76" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="645.0" y="86" width="24" height="18" fill="var(--t-ochre)"></rect>
+            <rect x="644.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="691.0" y="72" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="695.0" y="86" width="28" height="10" fill="var(--t-ochre)"></rect>
+            <rect x="696.0" y="114" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="223.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="227.0" y="140" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="230.0" y="150" width="22" height="20" fill="var(--t-ochre)"></rect>
+            <rect x="228.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="275.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="279.0" y="140" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="281.0" y="150" width="24" height="18" fill="var(--t-ochre)"></rect>
+            <rect x="280.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="327.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="331.0" y="150" width="28" height="10" fill="var(--t-ochre)"></rect>
+            <rect x="332.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="379.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="383.0" y="140" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="384.0" y="150" width="26" height="14" fill="var(--t-ochre)"></rect>
+            <rect x="384.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="431.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="435.0" y="140" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="440.0" y="150" width="18" height="16" fill="var(--t-ochre)"></rect>
+            <rect x="436.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="483.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="490.0" y="150" width="22" height="20" fill="var(--t-ochre)"></rect>
+            <rect x="488.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="535.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--green)" stroke-width="2"></rect>
+            <rect x="539.0" y="140" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="541.0" y="150" width="24" height="18" fill="var(--t-ochre)"></rect>
+            <rect x="540.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="587.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="591.0" y="140" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="591.0" y="150" width="28" height="10" fill="var(--t-ochre)"></rect>
+            <rect x="592.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="639.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="644.0" y="150" width="26" height="14" fill="var(--t-ochre)"></rect>
+            <rect x="644.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="691.0" y="136" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="695.0" y="140" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="700.0" y="150" width="18" height="16" fill="var(--t-ochre)"></rect>
+            <rect x="696.0" y="178" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="223.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="227.0" y="204" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="227.0" y="214" width="28" height="10" fill="var(--t-ochre)"></rect>
+            <rect x="228.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="275.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="280.0" y="214" width="26" height="14" fill="var(--t-ochre)"></rect>
+            <rect x="280.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="327.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="331.0" y="204" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="336.0" y="214" width="18" height="16" fill="var(--t-ochre)"></rect>
+            <rect x="332.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="379.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="383.0" y="204" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="386.0" y="214" width="22" height="20" fill="var(--t-ochre)"></rect>
+            <rect x="384.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="431.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="437.0" y="214" width="24" height="18" fill="var(--t-ochre)"></rect>
+            <rect x="436.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="483.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="487.0" y="204" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="487.0" y="214" width="28" height="10" fill="var(--t-ochre)"></rect>
+            <rect x="488.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="535.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="539.0" y="204" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="540.0" y="214" width="26" height="14" fill="var(--t-ochre)"></rect>
+            <rect x="540.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="587.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="596.0" y="214" width="18" height="16" fill="var(--t-ochre)"></rect>
+            <rect x="592.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="639.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="643.0" y="204" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="646.0" y="214" width="22" height="20" fill="var(--t-ochre)"></rect>
+            <rect x="644.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <rect x="691.0" y="200" width="36" height="50" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="695.0" y="204" width="28" height="4" fill="var(--t-cyan)"></rect>
+            <rect x="697.0" y="214" width="24" height="18" fill="var(--t-ochre)"></rect>
+            <rect x="696.0" y="242" width="16" height="2" fill="var(--rule)"></rect>
+            <text class="svg-sub" x="214" y="264">the whole archive, searched in seconds</text>
+
+            <path class="svg-line" d="M 158 165 L 198 165" marker-end="url(#a3)"></path>
+            <path class="svg-line" d="M 750 165 L 788 165" marker-end="url(#a3)"></path>
+
+            <!-- result with differences marked -->
+            <rect class="svg-box" x="790" y="60" width="202" height="210" style="fill: var(--t-green)"></rect>
+            <rect x="846" y="78" width="90" height="170" fill="var(--sheet)" stroke="var(--rule)"></rect>
+            <rect x="852" y="86" width="78" height="9" fill="var(--t-cyan)"></rect>
+            <rect x="855" y="108" width="40" height="3" fill="var(--rule)"></rect>
+            <rect x="855" y="117" width="27" height="3" fill="var(--rule)"></rect>
+            <rect x="855" y="142" width="72" height="64" fill="var(--t-ochre)"></rect>
+            <path d="M 891 223 L 896.5 232 L 885.5 232 Z" fill="none" stroke="var(--ink-soft)" stroke-width="1.2"></path>
+
+            <path d="M 866 164 L 867.41 168.06 L 871.71 168.15 L 868.28 170.74 L 869.53 174.85 L 866 172.4 L 862.47 174.85 L 863.72 170.74 L 860.29 168.15 L 864.59 168.06 Z" fill="var(--magenta)"></path>
+            <rect x="857" y="161" width="18" height="18" rx="2" fill="none" stroke="var(--magenta)" stroke-width="1.4"></rect>
+            <text class="svg-edge" x="866" y="156" text-anchor="middle" style="fill: var(--magenta)">+ logo</text>
+
+            <rect x="903.4" y="189.4" width="1.2" height="1.2" fill="var(--magenta)"></rect>
+            <rect x="899.5" y="185.5" width="9" height="9" rx="2" fill="none" stroke="var(--magenta)" stroke-width="1.4"></rect>
+            <text class="svg-edge" x="904" y="181" text-anchor="middle" style="fill: var(--magenta)">1 px</text>
+
+            <rect x="915" y="220" width="16" height="16" rx="2" fill="none" stroke="var(--magenta)" stroke-width="1.4" stroke-dasharray="3 2"></rect>
+            <text class="svg-edge" x="923" y="215" text-anchor="middle" style="fill: var(--magenta)">&minus; mark</text>
+            <text class="svg-sub" x="804" y="263">closest match, 3 differences</text>
+
+            <!-- time -->
+            <text class="svg-lbl" x="8" y="305">Matches</text>
+            <rect x="210" y="295" width="60" height="12" fill="var(--green)"></rect>
+            <text class="svg-sub" x="280" y="305">seconds</text>
+            <text class="svg-lbl" x="8" y="330">Every file, pixel by pixel</text>
+            <rect x="210" y="320" width="640" height="12" fill="var(--rule)"></rect>
+            <text class="svg-sub" x="860" y="330">hours to days</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>One design in, the closest match out, with every difference marked: what was removed, what was added and what changed.</figcaption>
+    </figure>
+  </section>
+
+  <section id="tenants">
+    <hr class="sec-rule">
+    <p class="eyebrow">Users and access</p>
+    <h2>From an open port to separated customers</h2>
+    <div class="col">
+      <p>At the start there was no login: anyone who could reach the server could add, search and delete. Access was built up step by step, from a simple login to secure tokens on every endpoint, then <b>user management with three roles</b> (super admin, tenant admin, user), and finally full separation of customer data.</p>
+      <p>Tenant admins manage their own users and decide who may edit entries. Every customer gets their own database and search index, so one customer&rsquo;s query can never reach another customer&rsquo;s data.</p>
+    </div>
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 940 290" role="img" aria-label="One API gateway routes each tenant to its own database and text index. A super admin can read across tenants by asking each one in turn and combining the answers.">
+          <defs>
+            <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 1 L 9 5 L 0 9 z" fill="currentColor"></path>
+            </marker>
+          </defs>
+          <g color="var(--ink)">
+            <rect class="svg-box" x="330" y="16" width="280" height="56" style="fill: var(--t-green)"></rect>
+            <text class="svg-lbl" x="344" y="40">API gateway</text>
+            <text class="svg-sub" x="344" y="56">token &rarr; user &rarr; tenant &rarr; connection</text>
+
+            <g>
+              <rect class="svg-box" x="30" y="140" width="230" height="120" stroke-dasharray="5 4" style="fill: none"></rect>
+              <text class="svg-row" x="44" y="162">TENANT A</text>
+              <rect class="svg-box" x="44" y="174" width="94" height="68" style="fill: var(--t-cyan)"></rect>
+              <text class="svg-lbl" x="54" y="200">Database</text>
+              <text class="svg-sub" x="54" y="216">own rows</text>
+              <text class="svg-sub" x="54" y="230">own vectors</text>
+              <rect class="svg-box" x="152" y="174" width="94" height="68" style="fill: var(--t-cyan)"></rect>
+              <text class="svg-lbl" x="162" y="200">Text index</text>
+              <text class="svg-sub" x="162" y="216">own</text>
+              <text class="svg-sub" x="162" y="230">collection</text>
+            </g>
+
+            <g>
+              <rect class="svg-box" x="355" y="140" width="230" height="120" stroke-dasharray="5 4" style="fill: none"></rect>
+              <text class="svg-row" x="369" y="162">TENANT B</text>
+              <rect class="svg-box" x="369" y="174" width="94" height="68" style="fill: var(--t-cyan)"></rect>
+              <text class="svg-lbl" x="379" y="200">Database</text>
+              <rect class="svg-box" x="477" y="174" width="94" height="68" style="fill: var(--t-cyan)"></rect>
+              <text class="svg-lbl" x="487" y="200">Text index</text>
+            </g>
+
+            <g>
+              <rect class="svg-box" x="680" y="140" width="230" height="120" stroke-dasharray="5 4" style="fill: none"></rect>
+              <text class="svg-row" x="694" y="162">TENANT C</text>
+              <rect class="svg-box" x="694" y="174" width="94" height="68" style="fill: var(--t-cyan)"></rect>
+              <text class="svg-lbl" x="704" y="200">Database</text>
+              <rect class="svg-box" x="802" y="174" width="94" height="68" style="fill: var(--t-cyan)"></rect>
+              <text class="svg-lbl" x="812" y="200">Text index</text>
+            </g>
+
+            <path class="svg-line" d="M 420 72 L 145 138" marker-end="url(#a4)"></path>
+            <path class="svg-line" d="M 470 72 L 470 138" marker-end="url(#a4)"></path>
+            <path class="svg-line" d="M 520 72 L 795 138" marker-end="url(#a4)"></path>
+            <text class="svg-edge" x="180" y="112">one tenant per user</text>
+
+            <path class="svg-line" d="M 616 44 L 700 44" marker-end="url(#a4)" stroke-dasharray="5 4"></path>
+            <text class="svg-edge" x="706" y="34">super admin only:</text>
+            <text class="svg-edge" x="706" y="48">ask every tenant,</text>
+            <text class="svg-edge" x="706" y="62">combine the answers</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>Separation by connection, not by a filter in a query. Only a super admin crosses the line, and only by asking each tenant in turn.</figcaption>
+    </figure>
+  </section>
+
+  <section id="modules">
+    <hr class="sec-rule">
+    <p class="eyebrow">Module map</p>
+    <h2>What the system is made of today</h2>
+    <div class="col">
+      <p>22 modules in four groups. Pick a group to see what&rsquo;s inside.</p>
+    </div>
+
+    <div class="groups">
+      <button class="group" type="button" aria-expanded="false" aria-controls="g-image" style="--accent: var(--magenta); --tint: var(--t-magenta)">
+        <svg class="gicon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V8h8M34 8h8v8M42 32v8h-8M14 40H6v-8"/><path d="M12 34l9-10 6 6 4-4 6 8"/><circle cx="31" cy="17" r="3"/></svg>
+        <span class="gname">Image understanding</span>
+        <span class="gcnt">7 modules</span>
+      </button>
+      <button class="group" type="button" aria-expanded="false" aria-controls="g-data" style="--accent: var(--cyan); --tint: var(--t-cyan)">
+        <svg class="gicon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="20" cy="11" rx="12" ry="4.5"/><path d="M8 11v22c0 2.5 5.4 4.5 12 4.5M32 11v8M8 22c0 2.5 5.4 4.5 12 4.5"/><circle cx="33" cy="32" r="7"/><path d="M38 37l5.5 5.5"/></svg>
+        <span class="gname">Data and search</span>
+        <span class="gcnt">5 modules</span>
+      </button>
+      <button class="group" type="button" aria-expanded="false" aria-controls="g-access" style="--accent: var(--green); --tint: var(--t-green)">
+        <svg class="gicon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 5l15 6v11c0 10-6.5 17-15 21-8.5-4-15-11-15-21V11z"/><rect x="18" y="23" width="12" height="9" rx="1.5"/><path d="M20.5 23v-3a3.5 3.5 0 0 1 7 0v3"/></svg>
+        <span class="gname">Access and tenancy</span>
+        <span class="gcnt">4 modules</span>
+      </button>
+      <button class="group" type="button" aria-expanded="false" aria-controls="g-ops" style="--accent: var(--ochre); --tint: var(--t-ochre)">
+        <svg class="gicon" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M24 6l18 9-18 9-18-9z"/><path d="M6 24l18 9 18-9M6 33l18 9 18-9"/></svg>
+        <span class="gname">Platform and operations</span>
+        <span class="gcnt">6 modules</span>
+      </button>
+    </div>
+    <p class="ghint">Click a group to open it.</p>
+
+    <div class="layer gpanel" id="g-image" hidden>
+      <div class="layer-head">
+        <span class="dot" style="background: var(--magenta)" aria-hidden="true"></span>
+        <h3>Image understanding</h3>
+        <span class="cnt">7 modules</span>
+      </div>
+    <div class="mods">
+      <div class="mod">
+        <p class="mod-name">Region of interest</p>
+        <p>Finds the part of the image that is the actual design. Repeated print sheets are handled by finding the grid, single items by a small trained model.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Element segmentation</p>
+        <p>Splits one image into its separate graphical elements with the <b>Grounding DINO</b> model, so a logo, an illustration and a legend are each embedded and found on their own.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">OCR text</p>
+        <p>Reads the text on the artwork with Tesseract, per region and at the right rotation. The result feeds the text search.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Barcode reading</p>
+        <p>Detects and decodes the codes on packaging, so an entry can be found by its code as well as by its picture.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Material check</p>
+        <p>Sorts a surface design into wood, stone or something else, with a small trained model on top of the image vector. Low and high resolution scans get a model each, because one model does not hold up across both.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Surface regions</p>
+        <p>Marks the spots on a decor sheet worth a second look and names each one: knot, crack, dark mark, bent grain, patch, edge. Image processing rules written in millimetres, under a second on one processor core. The first version used an AI model and was dropped &mdash; ten times slower, and it could not say what it had found.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">AI service</p>
+        <p>Turns an image region into a vector with <b>CLIP</b>, on a graphics card when there is one, and runs <b>Grounding DINO</b> to split an image into its elements. The small trained models all sit on top of those vectors. It is a service of its own with its own queues, so the models load once and the whole thing can be moved to another machine.</p>
+      </div>
+    </div>
+    </div>
+
+    <div class="layer gpanel" id="g-data" hidden>
+      <div class="layer-head">
+        <span class="dot" style="background: var(--cyan)" aria-hidden="true"></span>
+        <h3>Data and search</h3>
+        <span class="cnt">5 modules</span>
+      </div>
+    <div class="mods">
+      <div class="mod">
+        <p class="mod-name">PostgreSQL core</p>
+        <p>One row per image, one per element found in it, and the searchable fields beside them. The picture comparison runs inside the database, so a filter can cut the archive down before anything is compared.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Similarity search</p>
+        <p>Image in, ranked matches out. Tries four rotations, re-scores on look, texture and optionally colour, and returns the coordinates of the element that matched &mdash; so a crop of one element finds the file it belongs to.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Commonality search</p>
+        <p>Compares several images and shows what they have in common.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Text search</p>
+        <p>Looks in three places at once: the fields and barcodes in the database, the full text in Solr, and the meaning of the words. So an exact code and a half-remembered description both work, and the three sets of results are put on one scale before they are ranked.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Entry management</p>
+        <p>Editing, deleting and listing entries, including which fields callers are allowed to change and who changed an entry last.</p>
+      </div>
+    </div>
+    </div>
+
+    <div class="layer gpanel" id="g-access" hidden>
+      <div class="layer-head">
+        <span class="dot" style="background: var(--green)" aria-hidden="true"></span>
+        <h3>Access and tenancy</h3>
+        <span class="cnt">4 modules</span>
+      </div>
+    <div class="mods">
+      <div class="mod">
+        <p class="mod-name">Authentication</p>
+        <p>Short-lived access tokens with refresh tokens, checked on every endpoint. Logout revokes the token straight away instead of waiting for it to expire.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Users and roles</p>
+        <p>Three roles: super admin, tenant admin, user. Tenant admins manage their own users and set the default search settings that new accounts start with.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Editing rights</p>
+        <p>Editing entries is a permission, not a role. A tenant admin can allow it for some accounts and not others.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Tenant isolation</p>
+        <p>A database and text index per customer, created when the customer is created. Only a super admin can read across them, and only by asking each one in turn.</p>
+      </div>
+    </div>
+    </div>
+
+    <div class="layer gpanel" id="g-ops" hidden>
+      <div class="layer-head">
+        <span class="dot" style="background: var(--ochre)" aria-hidden="true"></span>
+        <h3>Platform and operations</h3>
+        <span class="cnt">6 modules</span>
+      </div>
+    <div class="mods">
+      <div class="mod">
+        <p class="mod-name">Queues and workers</p>
+        <p>Seven queues: four for the main workers &mdash; short jobs, long jobs, logging and surface work &mdash; and three more for the AI services. Each has its own containers and memory limits, so a long upload cannot block a quick search, and AI machines can be added or restarted on their own.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Migration tooling</p>
+        <p>Moves existing archives between stores and between customers, with progress tracking and the option to rebuild the vectors under new rules.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Installer and updater</p>
+        <p>A bash script sets up a customer machine from nothing: Docker, the licence container, the monitoring, and all the Matches containers with their settings. The same script updates an installation that already exists, to whichever version is asked for. Setting up or upgrading a machine is now one command and a few answers instead of a long list of manual steps.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Build pipeline</p>
+        <p>Docker images used to be built by hand. Now one version number, pushed once, starts a GitHub Actions pipeline that builds all six Docker images &mdash; API and workers, AI service, search index, queue, cleanup, metrics &mdash; each published under that version number, with the protected build shipping the core logic as encrypted libraries behind a hardware licence check. The test suite runs on every push, on every branch.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Monitoring and cleanup</p>
+        <p>Queue and worker monitoring, metrics for external dashboards, and scheduled cleanup of temporary data and old job results.</p>
+      </div>
+      <div class="mod">
+        <p class="mod-name">Test suite</p>
+        <p>591 tests covering every endpoint, including permissions, empty results and error paths. Built to make further changes safe.</p>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var groups = document.querySelectorAll(".group"), hint = document.querySelector(".ghint");
+      groups.forEach(function (b) {
+        b.addEventListener("click", function () {
+          var wasOpen = b.getAttribute("aria-expanded") === "true";
+          groups.forEach(function (o) {
+            o.setAttribute("aria-expanded", "false");
+            document.getElementById(o.getAttribute("aria-controls")).hidden = true;
+          });
+          if (!wasOpen) {
+            b.setAttribute("aria-expanded", "true");
+            document.getElementById(b.getAttribute("aria-controls")).hidden = false;
+          }
+          hint.hidden = !wasOpen;
+        });
+      });
+    })();
+  </script>
+
+  <section id="stack">
+    <hr class="sec-rule">
+    <p class="eyebrow">Toolkit</p>
+    <h2>Built with</h2>
+    <ul class="stack">
+      <li><i><img src="icons/fastapi.svg" alt=""></i>FastAPI</li>
+      <li><i><img src="icons/celery.svg" alt=""></i>Celery</li>
+      <li><i><img src="icons/rabbitmq.svg" alt=""></i>RabbitMQ</li>
+      <li><i><img src="icons/postgresql.svg" alt=""></i>PostgreSQL</li>
+      <li>pgvector</li>
+      <li><i><img src="icons/apachesolr.svg" alt=""></i>Solr</li>
+      <li>Redis</li>
+      <li><i><img src="icons/pytorch.svg" alt=""></i>PyTorch</li>
+      <li>CLIP</li>
+      <li>Grounding DINO</li>
+      <li><i><img src="icons/opencv.svg" alt=""></i>OpenCV</li>
+      <li>Tesseract OCR</li>
+      <li><i><img src="icons/docker.svg" alt=""></i>Docker</li>
+      <li><i><img src="icons/githubactions.svg" alt=""></i>GitHub Actions</li>
+      <li><i><img src="icons/aws.svg" alt=""></i>AWS</li>
+      <li><i><img src="icons/jsonwebtokens.svg" alt=""></i>JWT</li>
+      <li><i><img src="icons/prometheus.svg" alt=""></i>Prometheus</li>
+      <li><i><img src="icons/grafana.svg" alt=""></i>Grafana</li>
+    </ul>
+  </section>
+
+  <div class="cta">
+    <p>Want the full story? I&rsquo;m happy to walk you through it.</p>
+    <a href="index.html?lang=en#contact">Get in touch &rarr;</a>
+  </div>
+
+  <nav class="home"><a href="index.html?lang=en">&larr; Back to the main page</a></nav>
+
+  <footer><span>© 2026 Dmytro Zahoruiko</span><a href="impressum.html">Impressum</a></footer>
+
+</div>
+</body></html>
