@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>Impressum — Dmytro Zahoruiko</title>
+<title>Legal notice — Dmytro Zahoruiko</title>
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
   :root {
@@ -45,9 +45,13 @@
   a { color: var(--cyan); }
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 
-  .topbar { padding: 18px 0 0; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 18px 0 0; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; }
   .topbar a { color: var(--ink-soft); text-decoration: none; }
   .topbar a:hover { color: var(--ink); text-decoration: underline; }
+  .topbar .lang { display: flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--sheet); }
+  .topbar .lang a { padding: 5px 12px; color: var(--ink); }
+  .topbar .lang a:hover { text-decoration: none; background: var(--table); }
+  .topbar .lang a[aria-current] { background: var(--ink); color: var(--sheet); }
 
   .sheet { margin-top: 28px; background: var(--sheet); border: 1px solid var(--rule); padding: 32px 36px 36px; }
   h1 { font-size: clamp(28px, 4vw, 36px); font-weight: 700; letter-spacing: -.02em; line-height: 1.15; margin: 0 0 28px; }
@@ -63,28 +67,28 @@
 </head>
 <body>
 <div class="wrap">
-  <nav class="topbar"><a href="index.html">&larr; Dmytro Zahoruiko</a></nav>
+  <nav class="topbar" aria-label="Site">
+    <a href="index.html?lang=en">&larr; Dmytro Zahoruiko</a>
+    <div class="lang" role="group" aria-label="Language / Sprache">
+      <a href="impressum.html" lang="en" hreflang="en" aria-current="page" onclick="try{localStorage.setItem('lang','en')}catch(e){}">EN</a>
+      <a href="impressum.de.html" lang="de" hreflang="de" onclick="try{localStorage.setItem('lang','de')}catch(e){}">DE</a>
+    </div>
+  </nav>
 
   <main class="sheet">
-    <h1>Impressum</h1>
+    <h1>Legal notice</h1>
 
-    <h2>Angaben gemäß § 5 DDG</h2>
+    <h2>Information pursuant to § 5 DDG (German Digital Services Act)</h2>
     <p>
       Dmytro Zahoruiko<br>
-      Düsseldorf, Deutschland
+      40210 Düsseldorf, Germany
     </p>
 
-    <h2>Kontakt</h2>
+    <h2>Contact</h2>
     <p>
-      E-Mail: <a href="mailto:zahoruikodmytro1995@gmail.com">zahoruikodmytro1995@gmail.com</a><br>
-      Telefon: <a href="tel:+491784919857">+49 178 491 9857</a>
+      Email: <a href="mailto:zahoruikodmytro1995@gmail.com">zahoruikodmytro1995@gmail.com</a><br>
+      Phone: <a href="tel:+491784919857">+49 178 491 9857</a>
     </p>
-
-    <section lang="en">
-      <hr>
-      <h1 style="margin-top: 32px">Legal notice</h1>
-      <p>Information pursuant to § 5 of the German Digital Services Act (DDG): see the name and contact details above.</p>
-    </section>
   </main>
 </div>
 </body>

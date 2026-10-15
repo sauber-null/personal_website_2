@@ -54,6 +54,8 @@
 
   /* ---------- nav (pinned) ---------- */
   html { scroll-padding-top: 76px; }
+  /* nav jumps: land the section heading just under the bar, not its top padding */
+  section[id] { scroll-margin-top: -72px; }
   .topbar {
     position: sticky; top: 0; z-index: 10;
     background: var(--bg);
@@ -271,6 +273,7 @@
     .stat { padding: 12px; }
     .stat p { font-size: 12.5px; }
     section { padding-top: 56px; }
+    section[id] { scroll-margin-top: -56px; }
   }
   /* short laptop screens: keep the whole panel inside the first screen */
   @media (min-width: 961px) and (max-height: 780px) {
@@ -337,7 +340,7 @@
         <div class="stat"><strong data-de="&gt;99,9<small>%</small>">&gt;99.9<small>%</small></strong><p data-de="Uptime einer produktiven Such-Plattform im Multi-Client-Betrieb">uptime for a multi-client, production search platform</p></div>
         <div class="stat"><strong>−90<small>%</small></strong><p data-de="AWS-Kosten, nach dem Wechsel der Vektordatenbank zu PostgreSQL und der Optimierung der Embedding-Pipeline">AWS cost, after changing the vector database to PostgreSQL and optimizing the embedding pipeline</p></div>
         <div class="stat"><strong data-de="Millionen">Millions</strong><p data-de="an Bild- und Text-Assets, verarbeitet über ein asynchrones FastAPI-Backend">of image and text assets indexed through an async FastAPI backend</p></div>
-        <div class="stat"><strong>4→20</strong><p data-de="Services: von vier Containern zum mandantenfähigen System mit 591 automatisierten Tests">services: from four containers to a multi-tenant system with 591 automated tests</p></div>
+        <div class="stat"><strong>4→20</strong><p data-de="Services: von vier Containern zum mandantenfähigen System mit 600+ automatisierten Tests">services: from four containers to a multi-tenant system with 600+ automated tests</p></div>
       </div>
 
       <figure class="demo" id="demo">
@@ -525,7 +528,7 @@
       <a class="btn" href="https://www.linkedin.com/in/zzzzauber/" target="_blank" rel="noopener">LinkedIn ↗</a>
       <a class="btn" data-case href="rebuilding_matches.html" data-de="Case Study: Matches neu aufgebaut">Case study: Rebuilding Matches</a>
     </div>
-    <small data-de="© 2026 Dmytro Sahoruiko · Düsseldorf, Deutschland · <a href='impressum.html'>Impressum</a>">© 2026 Dmytro Zahoruiko · Düsseldorf, Germany · <a href="impressum.html">Impressum</a></small>
+    <small data-de="© 2026 Dmytro Sahoruiko · Düsseldorf, Deutschland · <a href='impressum.de.html'>Impressum</a>">© 2026 Dmytro Zahoruiko · Düsseldorf, Germany · <a href="impressum.html">Legal notice</a></small>
   </div>
 </footer>
 
