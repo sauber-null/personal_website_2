@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>An AI agent for the energy market</title>
+<meta name="description" content="Side project: an AI agent for German electricity supplier switches – answers from the official rulebook, deadlines by code, measured on 29 test questions.">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root {
+    --table: #DEE3E5;
+    --sheet: #FCFCFB;
+    --sheet-2: #F2F4F5;
+    --ink: #191E23;
+    --ink-soft: #5C666D;
+    --rule: #C3CACD;
+    --rule-soft: #DDE2E4;
+    --cyan: #0A6A8C;
+    --magenta: #A32A69;
+    --ochre: #90650A;
+    --green: #1D7550;
+    --t-cyan: #DBEAF1;
+    --t-magenta: #F4E2EC;
+    --t-ochre: #F2E9D4;
+    --t-green: #DCEEE4;
+    --shadow: 0 1px 0 rgba(25,30,35,.06), 0 12px 28px -20px rgba(25,30,35,.45);
+
+    --display: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --body: "Inter", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+    --mono-svg: ui-monospace, "SF Mono", "Cascadia Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --table: #13171A; --sheet: #1B2025; --sheet-2: #21272C; --ink: #E6E9E8; --ink-soft: #97A1A8;
+      --rule: #333B41; --rule-soft: #272E33; --cyan: #5CBBD9; --magenta: #E489B4; --ochre: #D9B255;
+      --green: #63C193; --t-cyan: #123340; --t-magenta: #391F2D; --t-ochre: #332A16; --t-green: #153027;
+      --shadow: 0 1px 0 rgba(0,0,0,.4), 0 14px 30px -22px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"] {
+    --table: #13171A; --sheet: #1B2025; --sheet-2: #21272C; --ink: #E6E9E8; --ink-soft: #97A1A8;
+    --rule: #333B41; --rule-soft: #272E33; --cyan: #5CBBD9; --magenta: #E489B4; --ochre: #D9B255;
+    --green: #63C193; --t-cyan: #123340; --t-magenta: #391F2D; --t-ochre: #332A16; --t-green: #153027;
+    --shadow: 0 1px 0 rgba(0,0,0,.4), 0 14px 30px -22px rgba(0,0,0,.9);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--table); color: var(--ink); font-family: var(--body);
+    font-size: 16px; line-height: 1.6; padding: 0 20px 96px; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .col { max-width: 68ch; }
+  a { color: var(--cyan); }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+  /* top bar */
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 18px 0 0; font-family: var(--mono); font-size: 12px; letter-spacing: .04em; }
+  .topbar .back { color: var(--ink); text-decoration: none; padding: 5px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--sheet); }
+  .topbar .back:hover { background: var(--sheet-2); border-color: var(--ink-soft); }
+  .topbar .lang { display: flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; background: var(--sheet); }
+  .topbar .lang a { padding: 5px 12px; text-decoration: none; color: var(--ink); }
+  .topbar .lang a[aria-current] { background: var(--ink); color: var(--sheet); }
+
+  /* masthead */
+  .masthead { padding: 28px 0 40px; display: flex; flex-direction: column; gap: 22px; }
+  .eyebrow { font-family: var(--mono); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-soft); margin: 0; }
+  h1 { font-family: var(--display); font-weight: 700; letter-spacing: -0.025em; font-size: clamp(42px, 7vw, 74px); line-height: .98; margin: 0; text-wrap: balance; }
+  .lede { font-size: clamp(19px, 2.2vw, 22px); line-height: 1.5; max-width: 60ch; margin: 0; }
+  .lede b { font-weight: 600; }
+  .inkbar { display: flex; height: 7px; width: 190px; }
+  .inkbar span { flex: 1; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .links a { font-family: var(--mono); font-size: 12.5px; text-decoration: none; color: var(--ink); padding: 7px 12px; border: 1px solid var(--rule); border-radius: 4px; background: var(--sheet); }
+  .links a:hover { border-color: var(--ink-soft); background: var(--sheet-2); }
+
+  /* counters */
+  .counters { display: flex; flex-wrap: wrap; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 12px 0 0; }
+  .counter { flex: 1 1 15%; background: var(--sheet); padding: 16px 18px 18px; display: flex; flex-direction: column; justify-content: space-between; }
+  .counter dt { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 8px; }
+  .counter dd { margin: 0; font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; font-size: 25px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .counter dd small { font-size: 15px; font-weight: 400; color: var(--ink-soft); }
+  @media (max-width: 899px) { .counter { flex-basis: 30%; } }
+  @media (max-width: 559px) { .counter { flex-basis: 45%; } }
+
+  /* sections */
+  section { padding: 56px 0 0; }
+  h2 { font-family: var(--display); font-weight: 700; letter-spacing: -0.02em; font-size: clamp(27px, 3.4vw, 37px); line-height: 1.08; margin: 10px 0 18px; text-wrap: balance; }
+  h3 { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: -0.01em; margin: 0 0 6px; }
+  p { margin: 0 0 16px; }
+  .sec-rule { border: 0; border-top: 2px solid var(--ink); margin: 0; }
+
+  /* figures */
+  figure { margin: 26px 0 30px; }
+  .scroller { overflow-x: auto; background: var(--sheet); border: 1px solid var(--rule); box-shadow: var(--shadow); padding: 18px 14px 6px; }
+  .scroller svg { display: block; min-width: 700px; width: 100%; height: auto; }
+  figcaption { font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); margin-top: 12px; max-width: 80ch; }
+  .svg-box { fill: var(--sheet-2); stroke: var(--rule); stroke-width: 1; }
+  .svg-ttl { font-family: var(--display); font-size: 16px; font-weight: 700; fill: var(--ink); }
+  .svg-lbl { font-family: var(--mono-svg); font-size: 12px; fill: var(--ink); }
+  .svg-sub { font-family: var(--mono-svg); font-size: 11px; fill: var(--ink-soft); }
+  .svg-line { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+  .svg-dash { stroke: var(--ink-soft); stroke-width: 1.2; fill: none; stroke-dasharray: 5 4; }
+  .svg-grid { stroke: var(--rule-soft); stroke-width: 1; }
+  .shot { display: block; width: 100%; max-width: 920px; margin: 0 auto; height: auto; border: 1px solid var(--rule); box-shadow: var(--shadow); background: var(--sheet); }
+
+  /* cards */
+  .wins { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 18px; margin-top: 26px; }
+  .win { background: var(--sheet); border: 1px solid var(--rule); border-top: 4px solid var(--accent, var(--ink)); box-shadow: var(--shadow); padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
+  .win .num { font-family: var(--mono); font-size: 12px; color: var(--accent, var(--ink-soft)); letter-spacing: .08em; }
+  .win h3 { font-size: 21px; line-height: 1.2; margin: 0; text-wrap: balance; }
+  .win p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--ink-soft); }
+  .win p b { color: var(--ink); font-weight: 600; }
+  .tags { list-style: none; margin: auto 0 0; padding: 6px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border: 1px solid var(--rule); border-radius: 3px; background: var(--sheet-2); color: var(--ink-soft); }
+
+  /* open questions: problem -> next step */
+  .next { margin-top: 26px; border: 1px solid var(--rule); box-shadow: var(--shadow); background: var(--rule); display: grid; gap: 1px; }
+  .next > div { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 0 14px; align-items: center; background: var(--sheet); padding: 16px 20px; }
+  .next .open { font-size: 15.5px; }
+  .next .arrow { font-family: var(--mono); color: var(--ink-soft); text-align: center; }
+  .next .fix { font-size: 15.5px; color: var(--green); font-weight: 500; }
+  .next-head { font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+  @media (max-width: 620px) {
+    .next > div { grid-template-columns: 1fr; gap: 6px; }
+    .next .arrow { text-align: left; }
+    .next > div.next-cols { display: none; }
+  }
+
+  /* stack */
+  .stack { list-style: none; padding: 0; margin: 22px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .stack li { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 4px; font-size: 14px; font-weight: 500; }
+  .stack i { display: inline-flex; width: 20px; height: 20px; padding: 2px; background: #fff; border-radius: 3px; }
+  .stack img { width: 100%; height: 100%; }
+
+  /* call to action */
+  .cta { margin-top: 64px; padding: 28px; background: var(--ink); color: var(--sheet); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 28px; }
+  .cta p { margin: 0; font-size: clamp(20px, 2.6vw, 26px); font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; max-width: 32ch; }
+  .cta .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+  .cta a { background: var(--sheet); color: var(--ink); text-decoration: none; font-weight: 600; padding: 12px 20px; border-radius: 4px; white-space: nowrap; }
+  .cta a.ghost { background: transparent; color: var(--sheet); border: 1px solid var(--sheet); }
+  .cta a:hover { background: var(--sheet-2); color: var(--ink); }
+  .home { display: flex; justify-content: center; margin-top: 28px; }
+  .home a { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border: 1px solid var(--ink); border-radius: 4px; color: var(--ink); background: var(--sheet); text-decoration: none; font-weight: 600; }
+  .home a:hover { background: var(--ink); color: var(--sheet); }
+  footer { margin-top: 64px; border-top: 1px solid var(--rule); padding-top: 18px; font-family: var(--mono); font-size: 11.5px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 6px 22px; }
+
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    .scroller, .win, .counters, .next, .shot { box-shadow: none; }
+    section, figure, .win { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav class="topbar" aria-label="Site">
+    <a class="back" href="index.html?lang=en">&larr; Dmytro Zahoruiko</a>
+    <div class="lang" role="group" aria-label="Language / Sprache">
+      <a href="energy_agent.html" lang="en" hreflang="en" aria-current="page" onclick="try{localStorage.setItem('lang','en')}catch(e){}">EN</a>
+      <a href="energy_agent.de.html" lang="de" hreflang="de" onclick="try{localStorage.setItem('lang','de')}catch(e){}">DE</a>
+    </div>
+  </nav>
+
+  <header class="masthead">
+    <div class="inkbar" aria-hidden="true">
+      <span style="background: var(--cyan)"></span>
+      <span style="background: var(--magenta)"></span>
+      <span style="background: var(--ochre)"></span>
+      <span style="background: var(--green)"></span>
+      <span style="background: var(--ink)"></span>
+    </div>
+    <p class="eyebrow">Side project &middot; AI agent &middot; 2026</p>
+    <h1>An AI agent for the energy market</h1>
+    <p class="lede"><b>When a household switches its electricity supplier, companies have 24 hours and a 230-page rulebook.</b> My agent answers questions from that rulebook with a source, calculates the deadlines and checks how far a switch has got.</p>
+
+    <dl class="counters">
+      <div class="counter"><dt>Correct answers</dt><dd>86&ndash;90<small>%</small></dd></div>
+      <div class="counter"><dt>Rulebook</dt><dd>231 <small>pages</small></dd></div>
+      <div class="counter"><dt>Test questions</dt><dd>29</dd></div>
+      <div class="counter"><dt>Tools</dt><dd>3</dd></div>
+      <div class="counter"><dt>Prototype</dt><dd>2 <small>days</small></dd></div>
+      <div class="counter"><dt>Automated tests</dt><dd>103</dd></div>
+    </dl>
+
+    <div class="links">
+      <a href="https://github.com/sauber-null/energy-agent" target="_blank" rel="noopener">Code on GitHub &#8599;</a>
+      <a href="#results">Results &darr;</a>
+    </div>
+  </header>
+
+  <section id="how">
+    <hr class="sec-rule">
+    <p class="eyebrow">How it works</p>
+    <h2>The model decides, the tools know the facts</h2>
+    <div class="col">
+      <p>The agent reads a question, picks the tool it needs, checks the result and only then answers. Facts come from tools, never from the model&rsquo;s memory.</p>
+    </div>
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 384" role="img" aria-label="A question goes to the agent, which uses three tools – search the rulebook, calculate a deadline, look up a switch – and returns an answer with its source. The language model is either Mistral in the EU or a local model on the laptop.">
+          <defs>
+            <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1L9 5L0 9z" fill="var(--ink)"/></marker>
+          </defs>
+          <!-- language model -->
+          <rect x="370" y="10" width="260" height="34" rx="17" fill="var(--sheet)" stroke="var(--ink-soft)" stroke-width="1.2"/>
+          <text class="svg-sub" x="500" y="31" text-anchor="middle">Mistral (EU)  or  local model</text>
+          <path class="svg-dash" d="M500 44V76"/>
+          <!-- question, agent, answer -->
+          <rect class="svg-box" x="24" y="96" width="246" height="74" rx="6"/>
+          <text class="svg-ttl" x="44" y="126">Question</text>
+          <text class="svg-sub" x="44" y="150">e.g. a deadline over Christmas</text>
+          <rect x="380" y="76" width="240" height="114" rx="6" fill="var(--t-cyan)" stroke="var(--cyan)" stroke-width="2"/>
+          <text class="svg-ttl" x="400" y="106">Agent</text>
+          <text class="svg-sub" x="400" y="132">picks a tool</text>
+          <text class="svg-sub" x="400" y="150">answers only with a result</text>
+          <text class="svg-sub" x="400" y="168">at most 6 steps</text>
+          <rect class="svg-box" x="730" y="96" width="246" height="74" rx="6"/>
+          <text class="svg-ttl" x="750" y="126">Answer</text>
+          <text class="svg-sub" x="750" y="150">with source and page</text>
+          <path class="svg-line" d="M270 133H376" marker-end="url(#arw)"/>
+          <path class="svg-line" d="M620 133H726" marker-end="url(#arw)"/>
+          <!-- tool bus -->
+          <path class="svg-line" d="M500 190V222M175 222H825"/>
+          <path class="svg-line" d="M175 222V250" marker-end="url(#arw)"/>
+          <path class="svg-line" d="M500 222V250" marker-end="url(#arw)"/>
+          <path class="svg-line" d="M825 222V250" marker-end="url(#arw)"/>
+          <text class="svg-sub" x="512" y="214">tool call &#8595;  result &#8593;</text>
+          <!-- tools -->
+          <rect class="svg-box" x="30" y="254" width="290" height="110" rx="6"/>
+          <rect x="30" y="254" width="290" height="5" fill="var(--magenta)"/>
+          <text class="svg-ttl" x="50" y="288">Search the rulebook</text>
+          <text class="svg-sub" x="50" y="314">231 pages from the regulator</text>
+          <text class="svg-sub" x="50" y="334">meaning + exact terms</text>
+          <rect class="svg-box" x="355" y="254" width="290" height="110" rx="6"/>
+          <rect x="355" y="254" width="290" height="5" fill="var(--ochre)"/>
+          <text class="svg-ttl" x="375" y="288">Calculate a deadline</text>
+          <text class="svg-sub" x="375" y="314">16 rules, German working days</text>
+          <text class="svg-sub" x="375" y="334">holidays of all 16 states</text>
+          <rect class="svg-box" x="680" y="254" width="290" height="110" rx="6"/>
+          <rect x="680" y="254" width="290" height="5" fill="var(--green)"/>
+          <text class="svg-ttl" x="700" y="288">Look up a switch</text>
+          <text class="svg-sub" x="700" y="314">status of a request</text>
+          <text class="svg-sub" x="700" y="334">test data, ID check digit</text>
+        </svg>
+      </div>
+      <figcaption>Every step is logged, so each answer can be traced back to the tool results behind it.</figcaption>
+    </figure>
+  </section>
+
+  <section id="results">
+    <hr class="sec-rule">
+    <p class="eyebrow">Results</p>
+    <h2>Measured, not guessed</h2>
+    <div class="col">
+      <p>29 test questions with known answers, checked automatically &ndash; including whether the agent invents a date that no tool returned.</p>
+    </div>
+    <figure>
+      <div class="scroller">
+        <svg viewBox="0 0 1000 300" role="img" aria-label="Correct answers out of 29 test questions: Mistral API in the EU 86 to 90 percent at 1.8 seconds per question; the same model locally 79 percent at 13.8 seconds; qwen3 14B locally 72 percent; qwen3 8B locally 59 percent, and 41 percent without the guardrail.">
+          <text class="svg-sub" x="10" y="22">correct answers</text>
+          <text class="svg-sub" x="990" y="22" text-anchor="end">s / question</text>
+          <!-- grid: x = 300 + 5.4 * percent -->
+          <path class="svg-grid" d="M300 36V262M435 36V262M570 36V262M705 36V262M840 36V262"/>
+          <text class="svg-sub" x="300" y="282" text-anchor="middle">0</text>
+          <text class="svg-sub" x="435" y="282" text-anchor="middle">25</text>
+          <text class="svg-sub" x="570" y="282" text-anchor="middle">50</text>
+          <text class="svg-sub" x="705" y="282" text-anchor="middle">75</text>
+          <text class="svg-sub" x="840" y="282" text-anchor="middle">100 %</text>
+          <!-- rows -->
+          <text class="svg-lbl" x="10" y="62">Mistral API, EU</text>
+          <rect x="300" y="46" width="475" height="24" fill="var(--cyan)"/>
+          <path d="M764 58H786M764 52V64M786 52V64" stroke="var(--ink)" stroke-width="1.4" fill="none"/>
+          <text class="svg-lbl" x="796" y="63">86&ndash;90 %</text>
+          <text class="svg-lbl" x="990" y="63" text-anchor="end">1.8</text>
+
+          <text class="svg-lbl" x="10" y="106">Same model, on a laptop</text>
+          <rect x="300" y="90" width="427" height="24" fill="var(--green)"/>
+          <text class="svg-lbl" x="736" y="107">79 %</text>
+          <text class="svg-lbl" x="990" y="107" text-anchor="end">13.8</text>
+
+          <text class="svg-lbl" x="10" y="150">qwen3 14B, local</text>
+          <rect x="300" y="134" width="389" height="24" fill="var(--ink-soft)"/>
+          <text class="svg-lbl" x="698" y="151">72 %</text>
+          <text class="svg-lbl" x="990" y="151" text-anchor="end">24.3</text>
+
+          <text class="svg-lbl" x="10" y="194">qwen3 8B, local</text>
+          <rect x="300" y="178" width="319" height="24" fill="var(--ink-soft)"/>
+          <text class="svg-lbl" x="628" y="195">59 %</text>
+          <text class="svg-lbl" x="990" y="195" text-anchor="end">12.6</text>
+
+          <text class="svg-lbl" x="10" y="238">&hellip; without guardrail</text>
+          <rect x="300" y="222" width="221" height="24" fill="none" stroke="var(--ink-soft)" stroke-width="1.4" stroke-dasharray="4 3"/>
+          <text class="svg-lbl" x="530" y="239">41 %</text>
+          <text class="svg-sub" x="580" y="239" style="fill: var(--magenta)">the guardrail lifts it to 59 % &#8593;</text>
+          <text class="svg-lbl" x="990" y="239" text-anchor="end">10.8</text>
+        </svg>
+      </div>
+      <figcaption>Same weights, different result: the API version is about 10 points better and 7&times; faster than the 4-bit model on a 16&nbsp;GB laptop &ndash; a trade-off between data protection and quality.</figcaption>
+    </figure>
+  </section>
+
+  <section id="hard">
+    <hr class="sec-rule">
+    <p class="eyebrow">Challenges</p>
+    <h2>What was hard, and how I solved it</h2>
+    <div class="wins">
+      <article class="win" style="--accent: var(--cyan)">
+        <span class="num">01</span>
+        <h3>AI is bad at dates</h3>
+        <p>Deadlines depend on working days, holidays in every state and even 24 and 31 December. <b>Code calculates them</b> from the official rules; the model only picks the rule and explains it.</p>
+        <ul class="tags"><li>Rule table</li><li>Working-day calendar</li></ul>
+      </article>
+      <article class="win" style="--accent: var(--magenta)">
+        <span class="num">02</span>
+        <h3>Is the answer right?</h3>
+        <p>29 test questions with known answers, checked on every change. The check also catches answers that <b>restate a correct result wrongly</b>, such as a wrong weekday.</p>
+        <ul class="tags"><li>Golden questions</li><li>pytest</li></ul>
+      </article>
+      <article class="win" style="--accent: var(--ochre)">
+        <span class="num">03</span>
+        <h3>Local models skipped the tools</h3>
+        <p>They answered from memory. A guardrail now rejects answers without a tool result: <b>41% &rarr; 59%</b> for the weakest model.</p>
+        <ul class="tags"><li>Guardrail</li><li>Ollama</li></ul>
+      </article>
+      <article class="win" style="--accent: var(--green)">
+        <span class="num">04</span>
+        <h3>Same model, different result</h3>
+        <p>On the laptop the same model scores 79% instead of 86&ndash;90%. <b>Not a bug but a trade-off</b> between keeping data local and quality &ndash; the numbers make it a clear conversation.</p>
+        <ul class="tags"><li>Mistral (EU)</li><li>Local models</li></ul>
+      </article>
+    </div>
+  </section>
+
+  <section id="next">
+    <hr class="sec-rule">
+    <p class="eyebrow">Still open</p>
+    <h2>What I would do next</h2>
+    <div class="next">
+      <div class="next-cols"><span class="next-head">Open</span><span></span><span class="next-head">Next step</span></div>
+      <div><span class="open">Two questions fail for every model: the search misses the right passage</span><span class="arrow">&rarr;</span><span class="fix">Store definitions on their own, add a re-ranker, measure again</span></div>
+      <div><span class="open">In two-step questions the model sometimes picks the wrong process step</span><span class="arrow">&rarr;</span><span class="fix">Let the tool return every deadline of a process at once</span></div>
+      <div><span class="open">I wrote the test questions myself</span><span class="arrow">&rarr;</span><span class="fix">Build them with case handlers from real cases</span></div>
+    </div>
+  </section>
+
+  <section id="demo">
+    <hr class="sec-rule">
+    <p class="eyebrow">Live demo</p>
+    <h2>Every step on screen</h2>
+    <div class="col">
+      <p>The demo shows each tool call with its arguments and result before the answer. It runs from my laptop and is password-protected; its interface is in German, like the people who would use it.</p>
+    </div>
+    <figure>
+      <img class="shot" src="images/energy-agent-demo.png" width="2000" height="1960" loading="lazy" alt="Demo page: the agent calls calculate_deadline for a registration sent on 23 December, skips the Christmas holidays and answers: 28 December 2026, 11:00, with its source.">
+      <figcaption>Question: when must the grid operator reject a registration sent on 23&nbsp;December? The tool skips 24&ndash;27&nbsp;December; the answer: Monday 28&nbsp;December, 11:00, with section and page.</figcaption>
+    </figure>
+  </section>
+
+  <section id="stack">
+    <hr class="sec-rule">
+    <p class="eyebrow">Toolkit</p>
+    <h2>Built with</h2>
+    <ul class="stack">
+      <li>Python</li>
+      <li><i><img src="icons/fastapi.svg" alt=""></i>FastAPI</li>
+      <li><i><img src="icons/postgresql.svg" alt=""></i>PostgreSQL</li>
+      <li>pgvector</li>
+      <li>bge-m3 embeddings</li>
+      <li>Mistral API</li>
+      <li>Ollama</li>
+      <li><i><img src="icons/docker.svg" alt=""></i>Docker</li>
+      <li>pytest</li>
+      <li>Cloudflare Tunnel</li>
+    </ul>
+  </section>
+
+  <div class="cta">
+    <p>Want to see it live? I&rsquo;ll show you the demo in a call.</p>
+    <div class="btns">
+      <a href="index.html?lang=en#contact">Get in touch &rarr;</a>
+      <a class="ghost" href="https://github.com/sauber-null/energy-agent" target="_blank" rel="noopener">Code on GitHub &#8599;</a>
+    </div>
+  </div>
+
+  <nav class="home"><a href="index.html?lang=en">&larr; Back to the main page</a></nav>
+
+  <footer><span>© 2026 Dmytro Zahoruiko</span><a href="impressum.html">Legal notice</a></footer>
+
+</div>
+<script data-goatcounter="https://zahoruiko.goatcounter.com/count"
+        async src="https://gc.zgo.at/count.js"></script>
+</body></html>

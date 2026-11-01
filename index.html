@@ -220,6 +220,10 @@
   .card h3 { font-size: 17px; font-weight: 600; letter-spacing: -.01em; line-height: 1.3; margin: 0 0 8px; }
   .card p { margin: 0 0 16px; color: var(--soft); font-size: 14.5px; line-height: 1.55; }
   .card .more-link { margin-top: auto; font-family: var(--mono); font-size: 12px; }
+  .card.side { grid-column: 1 / -1; border-left: 3px solid var(--accent); }
+  .card .kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); margin: 0 0 8px; }
+  .card .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; }
+  .card .foot .stack, .card .foot .more-link { margin-top: 0; }
 
   .stack { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: auto 0 0; padding: 0; }
   .stack li { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; padding: 3px 9px 3px 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--bg); line-height: 1.4; }
@@ -431,6 +435,22 @@
           <p data-de="Anforderungsanalyse, Integrations-Workshops und Rollout gemeinsam mit Kunden und internen Stakeholdern, denn ein System zählt erst, wenn es genutzt wird.">Requirements analysis, integration workshops and hands-on rollout with clients and internal stakeholders, because a system only counts once someone uses it.</p>
           <a class="more-link" data-case href="rebuilding_matches.html" data-de="Vollständige Case Study →">Full case study →</a>
         </article>
+        <article class="card side">
+          <p class="kicker" data-de="Nebenprojekt · 2026">Side project · 2026</p>
+          <h3 data-de="KI-Agent für Prozesse der Energiewirtschaft">AI agent for German energy market processes</h3>
+          <p data-de="Ein Tool-Calling-Agent für den Lieferantenwechsel nach GPKE: Antworten aus 231 Seiten BNetzA-Dokumenten mit Quelle, Fristen in Werktagen per Code berechnet, gemessen an 29 Golden Questions – 86–90 % richtig mit Mistral in der EU, 79 % komplett lokal.">A tool-calling agent for electricity supplier switches under the GPKE rules: answers from 231 pages of regulator documents with a source, deadlines in working days calculated by code, measured on 29 golden questions – 86–90% correct with Mistral in the EU, 79% fully local.</p>
+          <div class="foot">
+            <ul class="stack">
+              <li class="ni">RAG</li>
+              <li class="ni">Tool calling</li>
+              <li class="ni">pgvector</li>
+              <li class="ni">Mistral</li>
+              <li class="ni">Ollama</li>
+              <li><i><img src="icons/fastapi.svg" alt=""></i>FastAPI</li>
+            </ul>
+            <a class="more-link" data-case="agent" href="energy_agent.html" data-de="Case Study →">Case study →</a>
+          </div>
+        </article>
       </div>
     </div>
   </section>
@@ -538,7 +558,10 @@
     en: "Dmytro Zahoruiko — AI / Computer Vision Engineer",
     de: "Dmytro Sahoruiko — KI- / Computer-Vision-Engineer"
   };
-  var CASE = { en: "rebuilding_matches.html", de: "rebuilding_matches.de.html" };
+  var CASES = {
+    matches: { en: "rebuilding_matches.html", de: "rebuilding_matches.de.html" },
+    agent: { en: "energy_agent.html", de: "energy_agent.de.html" }
+  };
   var nodes = document.querySelectorAll("[data-de]");
   nodes.forEach(function (el) { el.setAttribute("data-en", el.innerHTML); });
 
@@ -546,7 +569,9 @@
     document.documentElement.lang = lang;
     document.title = TITLES[lang];
     nodes.forEach(function (el) { el.innerHTML = el.getAttribute("data-" + lang); });
-    document.querySelectorAll("a[data-case]").forEach(function (a) { a.setAttribute("href", CASE[lang]); });
+    document.querySelectorAll("a[data-case]").forEach(function (a) {
+      a.setAttribute("href", CASES[a.getAttribute("data-case") || "matches"][lang]);
+    });
     document.querySelectorAll(".lang button").forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.dataset.l === lang));
     });
