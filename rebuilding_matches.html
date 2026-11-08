@@ -416,6 +416,10 @@
         <dd>&minus;90%</dd>
       </div>
       <div class="counter">
+        <dt>Processing</dt>
+        <dd>12&times; faster</dd>
+      </div>
+      <div class="counter">
         <dt>Uptime</dt>
         <dd>&gt;99.9%</dd>
       </div>
@@ -462,7 +466,7 @@
         <ul>
           <li>Secure login, three user roles, and each customer&rsquo;s data fully separated</li>
           <li>20 services working in parallel, so a big upload never slows down a quick search</li>
-          <li>The archive lives on disk, and the AWS bill dropped by 90%</li>
+          <li>Smaller models trained on industry data process 12&times; faster and cut the AWS bill by 90%; the archive lives on disk</li>
           <li>Set up or updated with one command, with 600+ tests guarding every release</li>
         </ul>
       </div>
@@ -477,9 +481,9 @@
     <div class="wins">
       <article class="win" style="--accent: var(--cyan)">
         <span class="num">01</span>
-        <h3>Cut the cloud bill by 90%</h3>
-        <p>Moved search from an expensive in-memory vector database to <b>PostgreSQL</b>. The archive can now grow far beyond the server&rsquo;s memory, and each image&rsquo;s data takes a third of the space it used to.</p>
-        <ul class="tags"><li>PostgreSQL</li><li>pgvector</li><li>DiskANN</li></ul>
+        <h3>Made processing 12&times; faster and cut the cloud bill by 90%</h3>
+        <p>Trained every AI model in Matches on industry-specific data, then distilled each one into <b>a much smaller model</b>. Processing is 12&times; faster with no loss in quality, and that is the main reason the AWS bill fell by 90%. Search also moved from an in-memory vector database to PostgreSQL.</p>
+        <ul class="tags"><li>PyTorch</li><li>Fine-tuning</li><li>Distillation</li><li>PostgreSQL</li></ul>
       </article>
 
       <article class="win" style="--accent: var(--magenta)">
